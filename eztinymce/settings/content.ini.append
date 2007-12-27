@@ -1,0 +1,69 @@
+#?ini charset="iso-8859-1"?
+# eZ publish configuration file for content
+#
+# 'CustomAttributesDefaults' setting defines custom attributes default values
+# that appear in the dialog window for a newly created element.
+#
+# Example for a custom tag:
+#
+#[factbox]
+#CustomAttributesDefaults[myattr1]=default1
+#CustomAttributesDefaults[myattr2]=default2
+
+[header]
+# If this option is enabled, OE will act in "old style" when anchor inside
+#  header was stored as 'header' tag's attribute 'anchor_name'. (old behavior)
+# If disabled, anchor will be stored as a child tag for 'header'.
+# This option has sense only for eZ publish 3.8+, for previous version it
+#  is ignored.
+AnchorAsAttribute=disabled
+
+ClassDescription[]
+
+[paragraph]
+# Human-readable aliases for a class names that will be displayed
+# in the "Class" dropdowns of dialog windows.
+#ClassDescription[pRed]=Red bar
+ClassDescription[]
+
+[strong]
+ClassDescription[]
+
+[emphasize]
+ClassDescription[]
+
+[link]
+ClassDescription[]
+
+[literal]
+ClassDescription[]
+
+[table]
+ClassDescription[]
+Defaults[]
+Defaults[rows]=2
+Defaults[cols]=2
+Defaults[width]=100%
+Defaults[border]=1
+#Defaults[class]=myclass
+
+[tr]
+ClassDescription[]
+
+[th]
+ClassDescription[]
+
+[td]
+ClassDescription[]
+
+[ol]
+ClassDescription[]
+
+[ul]
+ClassDescription[]
+
+[embed]
+ClassDescription[]
+
+[embed-inline]
+ClassDescription[]

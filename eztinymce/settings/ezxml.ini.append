@@ -1,0 +1,8 @@
+#?ini charset="iso-8859-1"?
+# eZ publish configuration file.
+
+[HandlerSettings]
+ExtensionRepositories[]=eztinymce
+
+[InputSettings]
+Alias[ezsimplified]=eztinymce
