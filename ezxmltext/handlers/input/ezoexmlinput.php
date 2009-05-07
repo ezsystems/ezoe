@@ -1287,6 +1287,12 @@ class eZOEXMLInput extends eZXMLInputHandler
                 // find all list elements
                 foreach ( $tag->childNodes as $listItemNode )
                 {
+                    if ( !$listItemNode instanceof DOMElement )
+                    {
+                        eZDebug::writeWarning( '$listItemNode is not a DOMElement but a ' . get_class( $listItemNode ) . ', this should not happen..', __METHOD__ );
+                        continue;
+                    }
+
                     $LIcustomAttributePart = self::getCustomAttrPart( $listItemNode, $listItemStyleString );
 
                     $noParagraphs = $listItemNode->childNodes->length <= 1;
