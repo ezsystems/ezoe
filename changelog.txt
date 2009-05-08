@@ -5,6 +5,8 @@ eZ Online Editor 5.0 extension Changelog
 * Updated TinyMCE to 3.2.3.1
 * Fixed #14872: Embed tags cant always be edited
   (Merged from trunk Rev. 7)
+* Fixed #14868: Allow adding inline custom / embed tags in header tags
+  (Merged from trunk Rev. 9)
 
 5.0.1
 * Fixed translation of anchor Name attribute
