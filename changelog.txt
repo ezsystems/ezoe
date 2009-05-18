@@ -7,6 +7,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 7)
 * Fixed #14868: Allow adding inline custom / embed tags in header tags
   (Merged from trunk Rev. 9)
+* Fixed #14873: Call to undefined method DOMText::getAttribute()
+  (Merged from trunk Rev. 11)
 
 5.0.1
 * Fixed translation of anchor Name attribute
