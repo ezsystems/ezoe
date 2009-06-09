@@ -5,6 +5,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 23)
 * Change rewrite rules to support plain package
   (Merged from trunk Rev. 25)
+* Fixed #14935: Small typo at design.ini.append.php
+  (Merged from trunk Rev. 29)
 
 
 5.0.2
