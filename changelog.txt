@@ -7,7 +7,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 25)
 * Fixed #14935: Small typo at design.ini.append.php
   (Merged from trunk Rev. 29)
-
+* Fixed #15014: image identifier is hardcoded in upload_images.tpl
+  (Merged from trunk Rev. 33)
 
 5.0.2
 * Fixed #14834: Commented 'SkinVariant' in ezoe.ini casues error in error.log.
