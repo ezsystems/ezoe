@@ -22,6 +22,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 46)
 * Fixed: WebKit (Safari 4 & Chrome 2+) width problem on height resize
   (Merged from trunk Rev. 48)
+* Documented: #15151: Table insert row before ...
+  (Merged from trunk Rev. 50)
 
 5.0.2
 * Fixed #14834: Commented 'SkinVariant' in ezoe.ini casues error in error.log.
