@@ -24,6 +24,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 48)
 * Documented: #15151: Table insert row before ...
   (Merged from trunk Rev. 50)
+* Added workaround for script error on ezflow frontpages
+  (Merged from trunk Rev. 52)
 
 5.0.2
 * Fixed #14834: Commented 'SkinVariant' in ezoe.ini casues error in error.log.
