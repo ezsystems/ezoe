@@ -104,7 +104,7 @@ if ( contentType === 'images' )
                       </select>
                     </td>
                 </tr>
-                {if $content_type|eq('images')}
+                <!-- Next two attributes are image specific  -->
                 <tr>
                     <td class="column1"><label id="alttextlabel" for="objectAltText">{'Alternative text'|i18n('design/standard/ezoe')}</label></td> 
                     <td colspan="2"><input id="objectAltText" name="ContentObjectAttribute_image" size="53" type="text" value="" title="{'Alternative text for the image, lets internet clients know what kind of image this is without dowloading it or actually seeing it.'|i18n('design/standard/ezoe/wai')}" /></td>
@@ -117,12 +117,6 @@ if ( contentType === 'images' )
                     <td class="column1"><label id="tagslabel" for="objectTags">{'Tags'|i18n('design/standard/ezoe')}</label></td> 
                     <td colspan="2"><input id="objectTags" name="ContentObjectAttribute_tags" size="53" type="text" value="" title="{'Tags, aka Keywords are a comma separated list of words thats categorizes the content.'|i18n('design/standard/ezoe/wai')}" /></td>
                 </tr>
-                {else}
-                <tr>
-                    <td class="column1"><label id="descriptionlabel" for="objectDescription">{'Description'|i18n('design/standard/ezoe')}</label></td> 
-                    <td colspan="2"><input id="objectDescription" name="ContentObjectAttribute_description" size="53" type="text" value="" title="{'Description to the file your uploading, so internet clients can read more about it before they decide to download it.'|i18n('design/standard/ezoe/wai')}" /></td> 
-                </tr>
-                {/if}
                 <tr> 
                     <td colspan="3">
                     <input id="uploadButton" name="uploadButton" type="submit" value="{'Upload local file'|i18n('design/standard/ezoe')}" />
