@@ -24,6 +24,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 52)
 * Updated TinyMCE to 3.2.5
   (Merged from trunk Rev. 42)
+* Update TinyMCE params so past plugin validates word html correctly and don't remove align attributes.
+  (Merged from trunk Rev. 70)
   
 5.0.2a
 * Updated TinyMCE to 3.2.4.1
