@@ -28,6 +28,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 70)
 * Fixed #14785: Image or file upload > Sorting in location drop down
   (Merged from trunk Rev. 79)
+* Fixed #14986: Unable to change embedded objects in internet explorer 6
+  (Merged from trunk Rev. 82)
   
 5.0.2a
 * Updated TinyMCE to 3.2.4.1
