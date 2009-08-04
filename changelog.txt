@@ -26,6 +26,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 42)
 * Update TinyMCE params so past plugin validates word html correctly and don't remove align attributes.
   (Merged from trunk Rev. 70)
+* Documented: #14921: 'small' size hardcoded in ezoe code
+  (Merged from trunk Rev. 77)
 * Fixed #14785: Image or file upload > Sorting in location drop down
   (Merged from trunk Rev. 79)
 * Fixed #14986: Unable to change embedded objects in internet explorer 6
