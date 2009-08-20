@@ -3,6 +3,8 @@ eZ Online Editor 5.0 extension Changelog
 5.0.4
 * Fixed #15031: Unable to browse 'Images' folder on IE6 and IE7
   (Merged from trunk Rev. 87)
+* Updated TinyMCE to 3.2.6
+  (Merged from trunk Rev. 89)
 
 5.0.3
 * Fixed #14935: Small typo at design.ini.append.php
