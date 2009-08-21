@@ -37,13 +37,13 @@ tinyMCEPopup.onInit.add( function(){
                     <h3>{'Using the toolbar'|i18n("design/standard/ezoe/help")}</h3>
                     <dl>                        
                         <dt class="o2k7Skin defaultSkin"><span class="mceIcon mce_bold"></span></dt>
-                        <dd>{'Make the selected text <b>bold</b>. If the selected text is <b>bold</b> already, this button will remove the formating.'|i18n("design/standard/ezoe/help")}</dd>
+                        <dd>{'Make the selected text <b>bold</b>. If the selected text is <b>bold</b> already, this button will remove the formating.'|i18n("design/standard/ezoe/help")} <small>[CTRL+B]</small></dd>
 
                         <dt class="o2k7Skin defaultSkin"><span class="mceIcon mce_italic"></span></dt>
-                        <dd>{'Make the selected text <i>italic</i>. If the selected text is <i>italic</i> already, this button will remove the formating.'|i18n("design/standard/ezoe/help")}</dd>
+                        <dd>{'Make the selected text <i>italic</i>. If the selected text is <i>italic</i> already, this button will remove the formating.'|i18n("design/standard/ezoe/help")} <small>[CTRL+I]</small></dd>
 
                         <dt class="o2k7Skin defaultSkin"><span class="mceIcon mce_underline"></span></dt>
-                        <dd>{'Make the selected text <u>underline</u>. This button is only enabled if you have a custom tag named underline, template code to handle underline custom tags is not included in Online Editor.'|i18n("design/standard/ezoe/help")}</dd>
+                        <dd>{'Make the selected text <u>underline</u>. This button is only enabled if you have a custom tag named underline, template code to handle underline custom tags is not included in Online Editor.'|i18n("design/standard/ezoe/help")} <small>[CTRL+U]</small></dd>
 
                         <dt class="o2k7Skin defaultSkin"><span class="mceIcon mce_bullist"></span></dt>
                         <dd>{'Create a bullet list. To create a new list item, press "Enter". To end a list, press "Enter" key on an empty list item. If you click this button when the cursor is on a list item, the formatting will be removed.'|i18n("design/standard/ezoe/help")}</dd>
@@ -58,10 +58,10 @@ tinyMCEPopup.onInit.add( function(){
                         <dd>{'Decrease list indent. Use this button to change the level of a list item in a nested list.'|i18n("design/standard/ezoe/help")}</dd>
 
                         <dt class="o2k7Skin defaultSkin"><span class="mceIcon mce_undo"></span></dt>
-                        <dd>{'Undo the last operation in the editor. To undo more than one operation, keep clicking the button.'|i18n("design/standard/ezoe/help")}</dd>
+                        <dd>{'Undo the last operation in the editor. To undo more than one operation, keep clicking the button.'|i18n("design/standard/ezoe/help")} <small>[CTRL+Z]</small></dd>
 
                         <dt class="o2k7Skin defaultSkin"><span class="mceIcon mce_redo"></span></dt>
-                        <dd>{'Reverse the "Undo" command.'|i18n("design/standard/ezoe/help")}</dd>
+                        <dd>{'Reverse the "Undo" command.'|i18n("design/standard/ezoe/help")} <small>[CTRL+Y]</small></dd>
 
                         <dt class="o2k7Skin defaultSkin"><span class="mceIcon mce_link"></span></dt>
                         <dd>{'Create a hyperlink. You can select text first and then click this button to make the text a link. If the checkbox "Open in new window" is checked, the link will be displayed in a new browser window.'|i18n("design/standard/ezoe/help")}</dd>
@@ -82,7 +82,7 @@ tinyMCEPopup.onInit.add( function(){
                         <dd>{'Create a custom tag. Optionally select the text you want to transform to a custom tag and click the button to open the insert custom tag window. Select the name of the custom tag you want to insert from the list, edit the attributes and click OK to insert it.'|i18n("design/standard/ezoe/help")}</dd>
 
                         <dt class="o2k7Skin defaultSkin"><span class="mceIcon mce_literal"></span></dt>
-                        <dd>{'Insert literal text. Text written in this field will be rendered literally in the final output.'|i18n("design/standard/ezoe/help")}</dd>
+                        <dd>{'Insert literal text. Text written in this field will be rendered literally in the final output.'|i18n("design/standard/ezoe/help")} <small>[CTRL+8]</small></dd>
 
                         <dt class="o2k7Skin defaultSkin"><span class="mceIcon mce_charmap"></span></dt>
                         <dd>{'Insert a special character. Click the button to open the special character window. Click on a character to insert it.'|i18n("design/standard/ezoe/help")}</dd>
@@ -133,7 +133,7 @@ tinyMCEPopup.onInit.add( function(){
                         <dd>{'Send for publishing'|i18n("design/standard/content/edit")}</dd>
 
                         <dt class="o2k7Skin defaultSkin"><span class="mceIcon mce_store"></span></dt>
-                        <dd>{'Store draft'|i18n("design/standard/content/edit")}</dd>
+                        <dd>{'Store draft'|i18n("design/standard/content/edit")} <small>[CTRL+S]</small></dd>
 
                         <dt class="o2k7Skin defaultSkin"><span class="mceIcon mce_discard"></span></dt>
                         <dd>{'Discard'|i18n("design/standard/content/edit")}</dd>

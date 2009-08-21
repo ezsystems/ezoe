@@ -7,6 +7,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 89)
 * Fixed #14833: Cut/Copying and pasting custom-tags fails
   (Merged from trunk Rev. 91)
+* Documented: #15187: Keyboard shortcuts for functions in editor toolbar
+  (Merged from trunk Rev. 93)
 
 5.0.3
 * Fixed #14935: Small typo at design.ini.append.php
