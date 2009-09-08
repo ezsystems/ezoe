@@ -11,6 +11,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 93)
 * Implemented: possibility to opt out of __setDisabled in custom TinyMCE plugins using settings.ezPlugin, patch by stevo
   (Merged from trunk Rev. 95)
+* Added por-BR translation
+  (Merged from trunk Rev. 99)
 
 5.0.3
 * Fixed #14935: Small typo at design.ini.append.php
