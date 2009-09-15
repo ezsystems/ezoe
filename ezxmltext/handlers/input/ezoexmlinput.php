@@ -729,17 +729,16 @@ class eZOEXMLInput extends eZXMLInputHandler
 
         $output = str_replace( "\n", '', $output );
 
-        if ( $browserEngineName === 'Trident' )
+        if ( $output )
         {
-            $output .= '<p>&nbsp;</p>';
-        }
-        /* else if ( $browserEngineName === 'Presto' )
-        {
-            //$output .= '<p></p>';
-        }*/
-        else
-        {
-            $output .= '<p><br /></p>';
+            if ( $browserEngineName === 'Trident' )
+            {
+                $output .= '<p>&nbsp;</p>';
+            }
+            else
+            {
+                $output .= '<p><br /></p>';
+            }
         }
 
         eZDebugSetting::writeDebug( 'kernel-datatype-ezxmltext', $output, 'eZOEXMLInput::inputXML xml output to return' );
