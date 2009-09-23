@@ -3,8 +3,6 @@ eZ Online Editor 5.0 extension Changelog
 5.0.4
 * Fixed #15031: Unable to browse 'Images' folder on IE6 and IE7
   (Merged from trunk Rev. 87)
-* Updated TinyMCE to 3.2.6
-  (Merged from trunk Rev. 89)
 * Fixed #14833: Cut/Copying and pasting custom-tags fails
   (Merged from trunk Rev. 91)
 * Documented: #15187: Keyboard shortcuts for functions in editor toolbar
@@ -17,6 +15,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 101)
 * Fixed #15501: view attribute on links are removed on copy/paste
   (Merged from trunk Rev. 107)
+* Updated TinyMCE to 3.2.7
+  (Merged from trunk Rev. 115)
 
 5.0.3
 * Fixed #14935: Small typo at design.ini.append.php
