@@ -332,7 +332,7 @@ var eZOEPopupUtils = {
             for ( key in o )
             {
                 opt = document.createElement("option");
-                opt.value = key === '0' ? '' : key;
+                opt.value = key === '0' || key === '-0-' ? '' : key;
                 opt.innerHTML = o[key]
                 node.appendChild( opt );
                 c++;

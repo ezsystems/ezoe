@@ -196,7 +196,7 @@ function loadImageSize( e, el )
                                  'alt', $size_list,
                                  'class', 'select',
                                  'align', hash(
-                                               '0', 'None'|i18n('design/standard/ezoe'),
+                                               '-0-', 'None'|i18n('design/standard/ezoe'),
                                                'left', 'Left'|i18n('design/standard/ezoe'),
                                                'middle', 'Center'|i18n('design/standard/ezoe'),
                                                'right', 'Right'|i18n('design/standard/ezoe')
