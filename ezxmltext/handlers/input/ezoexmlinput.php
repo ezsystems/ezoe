@@ -552,11 +552,12 @@ class eZOEXMLInput extends eZXMLInputHandler
 
             if ( self::browserSupportsDHTMLType() === 'Trident' ) // IE
             {
-                $text = preg_replace( "/[\n\t]/", '', $text);
+                $text = str_replace( array( "\n", "\t" ), '', $text);
             }
             else
             {
-                $text = preg_replace( "/[\n\t]/", ' ', $text);
+                $text = str_replace( "\n", '', $text);
+                $text = str_replace( "\t", ' ', $text);
             }
 
             //eZDebug::writeDebug( $text, __METHOD__ );
