@@ -24,10 +24,6 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 107)
 * Updated TinyMCE to 3.2.7
   (Merged from trunk Rev. 115)
-* Fixed #015647: Extra paragraphs added when pasting text from websites in non IE browsers
-  (Merged from trunk Rev. 129)
-* Fixed #015649: Class 'None' sometimes saved when changing tag type in popup dialog
-  (Merged from trunk Rev. 131)
 
 5.0.3
 * Fixed #14935: Small typo at design.ini.append.php
