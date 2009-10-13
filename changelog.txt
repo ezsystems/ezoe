@@ -1,5 +1,12 @@
 eZ Online Editor 5.0 extension Changelog
 
+5.0.5
+* Fixed #015647: Extra paragraphs added when pasting text from websites in non IE browsers
+  (Merged from trunk Rev. 129)
+* Fixed #015649: Class 'None' sometimes saved when changing tag type in popup dialog
+  (Merged from trunk Rev. 131)
+
+
 5.0.4
 * Fixed #15031: Unable to browse 'Images' folder on IE6 and IE7
   (Merged from trunk Rev. 87)
