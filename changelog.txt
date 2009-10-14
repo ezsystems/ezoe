@@ -5,6 +5,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 129)
 * Fixed #015649: Class 'None' sometimes saved when changing tag type in popup dialog
   (Merged from trunk Rev. 131)
+* Fixed #15659: Empty paragraph created below inserted image
+  (Merged from trunk Rev. 137)
 
 
 5.0.4
