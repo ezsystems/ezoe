@@ -7,6 +7,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 131)
 * Fixed #15659: Empty paragraph created below inserted image
   (Merged from trunk Rev. 137)
+* Fixed #15663: "Apply to: column" target cells are shifted when rowspan is used
+  (Merged from trunk Rev. 148, 149 & 150)
 
 
 5.0.4

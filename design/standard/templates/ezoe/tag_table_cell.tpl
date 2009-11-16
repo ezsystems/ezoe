@@ -20,7 +20,7 @@ tinyMCEPopup.onInit.add( ez.fn.bind( eZOEPopupUtils.init, window, {
     cancelButton: 'CancelButton',
     tagAttributeEditor:    function( ed, el, args )
     {
-        var mode = ez.$('cell_args_apply_to').el.value, nodes, x = 0, target = this.settings.tagSelector.el.value;
+        var mode = ez.$('cell_args_apply_to').el.value, nodes = false, x = 0, target = this.settings.tagSelector.el.value;
 
         if ( mode === 'row' )
         {
@@ -29,13 +29,69 @@ tinyMCEPopup.onInit.add( ez.fn.bind( eZOEPopupUtils.init, window, {
         }
         else if ( mode === 'column' )
         {
-            // figgure out what column we are in
-            for (var i = 0, c = el.parentNode.childNodes, l = c.length; i < l; i++ ) 
+            // Figgure out what column we are in adjusted by cell with colspan
+            var colspans = 1, rowIndex = el.parentNode.rowIndex, skipRows = 0, rowSpanArray = [];
+            for ( var i = 0, c = el.parentNode.childNodes, l = c.length; i < l; i++ ) 
             {
-                if ( c[i] === el ) x = i + 1;
+                if ( c[i] === el ) x = i + colspans;
+                else if ( c[i].colSpan > 1 ) colspans += c[i].colSpan -1;
             };
-            // get nodes (cells) in this column
-            nodes = ez.$$('tr > *:nth-child(' + x + ')', el.parentNode.parentNode );
+
+            // Addjust the column index if any prevous cells in table uses rowspan that might affect it
+            if ( rowIndex > 0 )
+            {
+                var row = el.parentNode, rowSpanOffset = 1;
+                while ( row = row.previousSibling )
+                {
+                	ez.$$('td[rowspan]', row ).forEach(function( tdO, i ){
+                        if ( tdO.el.rowSpan >  rowSpanOffset )
+                        {
+                            x++;
+                        }
+                    });
+                	rowSpanOffset++;
+                }
+            }
+
+            // Get nodes (cells) in this column
+            ez.$$('tr', el.parentNode.parentNode ).forEach( function( trO, trIndedx )
+            {
+
+                // count down rowSpan values and remove the ones that has reached 0
+                for( var i = 0, l = rowSpanArray.length; i < l; i++ )
+                {
+                    rowSpanArray[i]--;
+                    if ( rowSpanArray[i] < 1 ) rowSpanArray.splice( i, 1 );
+                }
+                if ( skipRows === 0 )
+                {
+                    var colIndex = x - rowSpanArray.length;
+                    ez.$$('td', trO.el ).forEach( function( tdO, i )
+                    {
+                        if ( colIndex === ( i + 1 ) )
+                        {
+                             // add current cell to selected nodes array
+                             if ( nodes === false ) nodes =  ez.array.extend( [ tdO ] );
+                             else nodes.push( tdO.el );
+
+                             // If this cell has rowspan, make sure we skip the next rows
+                             if ( tdO.el.rowSpan > 1 ) skipRows = tdO.el.rowSpan - 1;
+                        }
+                        else if ( colIndex > ( i + 1 ) )
+                        {
+                            // correct col index when some cells use colSpan
+                            if ( tdO.el.colSpan >  1 ) colIndex -= tdO.el.colSpan - 1;
+                            // store rowspans that will effect column index in the next rows
+                            if ( tdO.el.rowSpan > 1 ) rowSpanArray.push( tdO.el.rowSpan);
+                            
+                        }
+                    });
+                }
+                else
+                {
+                    skipRows--;
+                }
+            });
         }
 
         if ( !nodes )
