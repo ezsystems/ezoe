@@ -584,7 +584,7 @@ class eZOEXMLInput extends eZXMLInputHandler
                 if ( !$textChild ||
                      ( $lastChild->childNodes->length == 1 &&
                        $textChild->nodeType == XML_TEXT_NODE &&
-                       ( $textChild->textContent == " " || $textChild->textContent == ' ' ||$textChild->textContent == '' ) ) )
+                       ( $textChild->textContent == " " || $textChild->textContent == ' ' || $textChild->textContent == '' || $textChild->textContent == '&nbsp;' ) ) )
                 {
                     $parent->removeChild( $lastChild );
                 }
@@ -1035,6 +1035,7 @@ class eZOEXMLInput extends eZXMLInputHandler
                 }
 
                 $tagContent = htmlspecialchars( $tagContent );
+                $tagContent = str_replace ( '&amp;nbsp;', '&nbsp;', $tagContent );
 
                 if ( $this->allowMultipleSpaces )
                 {
