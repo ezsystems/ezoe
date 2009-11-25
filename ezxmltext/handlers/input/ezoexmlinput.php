@@ -1070,8 +1070,16 @@ class eZOEXMLInput extends eZXMLInputHandler
                 $idString  = '';
                 $tplSuffix = '';
 
-                if ( !$size ) $size = 'medium';
-                if ( !$view ) $view = $tagName;
+                if ( !$size )
+                {
+                    $contentIni = eZINI::instance( 'content.ini' );
+                    $size       = $contentIni->variable( 'ImageSettings', 'DefaultEmbedAlias' );
+                }
+
+                if ( !$view )
+                {
+                    $view = $tagName;
+                }
 
                 $objectAttr = '';                
                 $objectAttr .= ' alt="' . $size . '"';
