@@ -11,6 +11,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 148, 149 & 150)
 * Fixed #15882: Embed size when not set in ezxml hardcoded to medium, should use DefaultEmbedAlias
   (Merged from trunk Rev. 162)
+* Fixed #15872: suggestions of spell checker have the wrong encoding
+  (Merged from trunk Rev. 170)
 
 
 5.0.4
