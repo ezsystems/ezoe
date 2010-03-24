@@ -13,6 +13,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 162)
 * Fixed #15872: suggestions of spell checker have the wrong encoding
   (Merged from trunk Rev. 170)
+* Fixed bug #16469: embedding objects in another language causes serious problems in following not-translateable attributes
+  (Merged from trunk Rev. 190)
 
 
 5.0.4
