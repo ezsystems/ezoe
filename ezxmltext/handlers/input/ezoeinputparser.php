@@ -320,6 +320,16 @@ class eZOEInputParser extends eZXMLInputParser
             // empty check to not store buggy links created
             // by pasting content from ms word 2007
         }
+        else if ( isset( $attributes['mce_href'] ) && isset( $attributes['href'] ) )
+        {
+            // TinyMCE link tag
+            $name = 'link';
+            $attributes['href'] = $attributes['mce_href'];
+            if ( isset( $attributes['name'] ) && !isset( $attributes['anchor_name'] ) )
+            {
+                $attributes['anchor_name'] = $attributes['name'];
+            }
+        }
         else if ( isset( $attributes['href'] ) )
         {
             // normal link tag
