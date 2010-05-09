@@ -6,7 +6,7 @@ eZ Online Editor 5.x extension Changelog
   (merged from trunk rev. 206)
 - Fixed bug #16271: Links containing special characters are not stored correctly
 - Fixed bug #016725: Check hasContent on image object attribute before it is used
-  (merged from trunk rev. 226)
+  (merged from trunk rev. 226 & 229)
 
 
 5.1.0
