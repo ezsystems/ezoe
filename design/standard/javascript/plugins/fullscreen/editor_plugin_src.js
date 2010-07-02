@@ -2,7 +2,7 @@
  * $Id: editor_plugin_src.js 923 2008-09-09 16:45:29Z spocke $
  *
  * @author Moxiecode
- * @copyright Copyright © 2004-2008, Moxiecode Systems AB, All rights reserved.
+ * @copyright Copyright ï¿½ 2004-2008, Moxiecode Systems AB, All rights reserved.
  */
 
 (function() {
@@ -112,6 +112,7 @@
 					t.fullscreenElement = new tinymce.dom.Element('mce_fullscreen_container');
 					t.fullscreenElement.update();
 					//document.body.overflow = 'hidden';
+					DOM.win.scrollTo(0, 0);
 
 					t.resizeFunc = tinymce.dom.Event.add(DOM.win, 'resize', function() {
 						var vp = tinymce.DOM.getViewPort();
