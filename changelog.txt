@@ -15,6 +15,8 @@ eZ Online Editor 5.0 extension Changelog
   (Merged from trunk Rev. 170)
 * Fixed bug #16469: embedding objects in another language causes serious problems in following not-translateable attributes
   (Merged from trunk Rev. 190)
+* Fixed bug #016952: IE6 OE 5.0.2 fullscreen mode has no button box
+  (Merged from trunk Rev. 250)
 
 
 5.0.4
