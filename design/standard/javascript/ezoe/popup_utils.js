@@ -286,6 +286,8 @@ var eZOEPopupUtils = {
 
     	if ( edCurrentNode.nextSibling )
     		edCurrentNode.parentNode.insertBefore( newElement, edCurrentNode.nextSibling );
+        else if ( edCurrentNode.nodeName === 'BODY' )// IE when editor is empty
+            edCurrentNode.appendChild( newElement );
     	else
     		edCurrentNode.parentNode.appendChild( newElement );
 

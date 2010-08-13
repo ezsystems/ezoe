@@ -9,6 +9,8 @@ eZ Online Editor 5.x extension Changelog
   (merged from trunk rev. 226 & 229)
 - Fixed bug #016952: IE6 OE 5.0.2 fullscreen mode has no button box
   (merged from trunk rev. 250)
+- Fixed bug #016888: IE only : Custom tag do not save when first thing inserted in OE
+  (merged from trunk rev. 267)
 
 
 5.1.0
