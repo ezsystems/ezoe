@@ -11,6 +11,8 @@ eZ Online Editor 5.x extension Changelog
   (merged from trunk rev. 250)
 - Fixed bug #016888: IE only : Custom tag do not save when first thing inserted in OE
   (merged from trunk rev. 267)
+- Fixed bug #016842: in IE 8, have to edit attribute before entering literal tag
+  (merged from trunk rev. 267)
 
 
 5.1.0
