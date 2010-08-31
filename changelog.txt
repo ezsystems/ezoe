@@ -17,6 +17,8 @@ eZ Online Editor 5.x extension Changelog
   (merged from trunk rev. 277)
 - Fixed bug #015513: Custom attributes: checkbox problems
   (merged from trunk rev. 280)
+- Fixed bug #017182: Underline is stripped away when saving after changing it with dialogs
+  (merged from trunk rev. 282)
 
 
 5.1.0
