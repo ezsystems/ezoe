@@ -19,6 +19,8 @@ eZ Online Editor 5.x extension Changelog
   (merged from trunk rev. 280)
 - Fixed bug #017182: Underline is stripped away when saving after changing it with dialogs
   (merged from trunk rev. 282)
+- Fixed bug #017163: unwanted &amp;nbsp; in enabling/disabling editor
+  (merged from trunk rev. 284)
 
 
 5.1.0
