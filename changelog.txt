@@ -13,6 +13,8 @@ eZ Online Editor 5.x extension Changelog
   (merged from trunk rev. 267)
 - Fixed bug #016842: in IE 8, have to edit attribute before entering literal tag
   (merged from trunk rev. 267)
+- Fixed bug #016595: Issues with page break and embed objects
+  (merged from trunk rev. 277)
 
 
 5.1.0
