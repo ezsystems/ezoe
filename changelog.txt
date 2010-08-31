@@ -15,6 +15,8 @@ eZ Online Editor 5.x extension Changelog
   (merged from trunk rev. 267)
 - Fixed bug #016595: Issues with page break and embed objects
   (merged from trunk rev. 277)
+- Fixed bug #015513: Custom attributes: checkbox problems
+  (merged from trunk rev. 280)
 
 
 5.1.0
