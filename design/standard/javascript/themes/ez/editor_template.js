@@ -1256,11 +1256,10 @@
             if ((k > 32 && k < 41) || (k > 111 && k < 124))
                 return true;
 
-            // Remove embed tag if user clicks del or backspace
-            if ( k === 8 || k === 46 )
+            if ( k === 8 || k === 46 )// Remove embed tag if user clicks del or backspace
             {
                 var n = this.__getParentByTag( ed.selection.getNode(), 'DIV,SPAN', 'mceNonEditable', '', true );
-                if ( n !== undefined && n.parentNode && n.parentNode.removeNode !== undefined )
+                if ( n !== undefined && n.parentNode && n.parentNode.removeChild !== undefined )
                 {
                     // Avoid that several embed tags are removed at once if they are placed side by side
                     if ( !this.__recursion )
@@ -1268,9 +1267,36 @@
                         this.__recursion = true;
                         n.parentNode.removeChild( n );
                         setTimeout(BIND( function(){ this.__recursion = false; }, this ), 50);
+                        ed.nodeChanged();
                     }
                 }
                 else return true;
+            }
+            else if ( k === 13 )// user clicks enter, create paragraph after embed block
+            {
+                var n = this.__getParentByTag( ed.selection.getNode(), 'DIV', 'ezoeItemNonEditable', '', true );
+                if ( n !== undefined && n.parentNode && !this.__recursion )
+                {
+                    this.__recursion = true;
+                    var newNode = ed.dom.create('p', false, tinymce.isIE ? '&nbsp;' : '<br />' );
+                    ed.dom.insertAfter( newNode, n );
+                    ed.selection.select( newNode, true );
+                    setTimeout(BIND( function(){ this.__recursion = false; }, this ), 150);
+                    ed.nodeChanged();
+                }
+            }
+            else if ( k === 32 )// user clicks space, create space after embed inline
+            {
+                var n = this.__getParentByTag( ed.selection.getNode(), 'SPAN', 'ezoeItemNonEditable', '', true );
+                if ( n !== undefined && n.parentNode && !this.__recursion )
+                {
+                    this.__recursion = true;
+                    var newNode = ed.dom.doc.createTextNode(" ");
+                    ed.dom.insertAfter( newNode, n );
+                    ed.selection.select( newNode, true );
+                    setTimeout(BIND( function(){ this.__recursion = false; }, this ), 150);
+                    ed.nodeChanged();
+                }
             }
             return Event.cancel(e);
         },
