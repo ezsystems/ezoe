@@ -1,5 +1,9 @@
 eZ Online Editor 5.x extension Changelog
 
+5.2.1
+- Fix #017402: ezoe offset passed to ezoe browse as string not integer
+  (merge from trunk rev. 318)
+
 5.2.0beta3
 - Updated TinyMCE to 3.3.9
 
