@@ -99,11 +99,15 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
             el = eZOEPopupUtils.switchTagTypeIfNeeded( el, target );
             ed.dom.setAttribs( el, args );
         }
-        else nodes.each( function( i, el )
+        else nodes.each( function( i, cell )
         {
-            el = eZOEPopupUtils.switchTagTypeIfNeeded( el, target );
-            ed.dom.setAttribs( el, args );
+            if ( el === cell )
+                cell = el = eZOEPopupUtils.switchTagTypeIfNeeded( cell, target );
+            else
+                cell = eZOEPopupUtils.switchTagTypeIfNeeded( cell, target );
+            ed.dom.setAttribs( cell, args );
         });
+        return el;
     },
     tagSelector: ezTagName + '_tag_source',
     tagSelectorCallBack: function( e )

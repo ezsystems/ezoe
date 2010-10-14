@@ -1,4 +1,14 @@
-tinyMCEPopup.requireLangPack();
+/**
+ * charmap.js
+ *
+ * Copyright 2009, Moxiecode Systems AB
+ * Released under LGPL License.
+ *
+ * License: http://tinymce.moxiecode.com/license
+ * Contributing: http://tinymce.moxiecode.com/contributing
+ */
+
+//tinyMCEPopup.requireLangPack();
 
 var charmap = [
 	['&nbsp;',    '&#160;',  true, 'no-break space'],

@@ -42,7 +42,7 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
     },
     tagGenerator: function( tag, customTag )
     {
-        return '<img id="__mce_tmp" src="javascript:void(0);" />';
+        return '<img id="__mce_tmp" src="JavaScript:void(0);" />';
     },
     tagAttributeEditor: function( ed, el, args )
     {
@@ -64,6 +64,7 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
            args['height'] = imageSizeObj['height'];
         }
         ed.dom.setAttribs( el, args );
+        return el;
     }
 }));
 
@@ -87,7 +88,7 @@ function inlineSelectorChange( e, el )
     if ( editorEl )
     {
         var viewValue = editorEl.getAttribute('view');
-        var classValue = jQuery.trim( editorEl.className.replace(/(webkit-[\w\-]+|Apple-[\w\-]+|mceItem\w+|mceVisualAid|mceNonEditable)/g, '') );
+        var classValue = jQuery.trim( editorEl.className.replace(/(webkit-[\w\-]+|Apple-[\w\-]+|mceItem\w+|ezoeItem\w+|mceVisualAid)/g, '') );
     }
 
     if ( viewValue && viewListData[ tag ].join !== undefined && (' ' + viewListData[ tag ].join(' ') + ' ').indexOf( ' ' + viewValue + ' ' ) !== -1 )

@@ -1,8 +1,11 @@
 /**
- * $Id: editor_template_src.js 1045 2009-03-04 20:03:18Z spocke $
+ * editor_template_src.js
  *
- * @author Moxiecode
- * @copyright Copyright � 2004-2008, Moxiecode Systems AB, All rights reserved.
+ * Copyright 2009, Moxiecode Systems AB
+ * Released under LGPL License.
+ *
+ * License: http://tinymce.moxiecode.com/license
+ * Contributing: http://tinymce.moxiecode.com/contributing
  */
 
 /* 
@@ -114,11 +117,8 @@
 
                     if (k == v && v >= 1 && v <= 7) {
                         k = v + ' (' + t.sizes[v - 1] + 'pt)';
-
-                        if (ed.settings.convert_fonts_to_spans) {
-                            cl = s.font_size_classes[v - 1];
-                            v = s.font_size_style_values[v - 1] || (t.sizes[v - 1] + 'pt');
-                        }
+                        cl = s.font_size_classes[v - 1];
+                        v = s.font_size_style_values[v - 1] || (t.sizes[v - 1] + 'pt');
                     }
 
                     if (/^\s*\./.test(v))
@@ -130,17 +130,20 @@
                 s.theme_advanced_font_sizes = o;
             }
 
-            if ((v = s.theme_advanced_path_location) && v !== 'none')
+            if ((v = s.theme_advanced_path_location) && v != 'none')
                 s.theme_advanced_statusbar_location = s.theme_advanced_path_location;
 
-            if (s.theme_advanced_statusbar_location === 'none')
+            if (s.theme_advanced_statusbar_location == 'none')
                 s.theme_advanced_statusbar_location = 0;
 
             // Init editor
             ed.onInit.add(function() {
-                ed.onNodeChange.add(t._nodeChanged, t);
+                if (!ed.settings.readonly)
+                    ed.onNodeChange.add(t._nodeChanged, t);
+
                 ed.addShortcut('ctrl+8', '', ['FormatBlock', false, '<pre>']);
                 ed.addShortcut('ctrl+9', '', ['FormatBlock', false, '<pre>']);
+
                 if ( s.theme_ez_content_css )
                 {
                     var css_arr = s.theme_ez_content_css.split(',');
@@ -148,7 +151,40 @@
                        ed.dom.loadCSS( css_arr[ind] );
                 }
                 else if (ed.settings.content_css !== false)
-                    ed.dom.loadCSS(ed.baseURI.toAbsolute("themes/ez/skins/" + ed.settings.skin + "/content.css"));
+                    ed.dom.loadCSS(ed.baseURI.toAbsolute(url + "/skins/" + ed.settings.skin + "/content.css"));
+
+                // Add support for align attribute (until parser and theme supports style based alignment)
+                // taken from legacyoutput plugin
+                var alignElements = 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li,table,img', serializer = ed.serializer;
+
+                // Override some internal formats to produce legacy elements and attributes
+                ed.formatter.register({
+                    // Change alignment formats to use the deprecated align attribute
+                    alignleft : {selector : alignElements, attributes : {align : 'left'}},
+                    aligncenter : {selector : alignElements, attributes : {align : 'center'}},
+                    alignright : {selector : alignElements, attributes : {align : 'right'}},
+                    alignfull : {selector : alignElements, attributes : {align : 'full'}}
+                });
+
+                // Force parsing of the serializer rules
+                serializer._setup();
+
+                // Add the missing and depreacted align attribute for the serialization engine
+                tinymce.each(alignElements.split(','), function(name) {
+                    var rule = serializer.rules[name], found;
+
+                    if (rule) {
+                        tinymce.each(rule.attribs, function(name, attr) {
+                            if (attr.name == 'align') {
+                                found = true;
+                                return false;
+                            }
+                        });
+
+                        if (!found)
+                            rule.attribs.push({name : 'align'});
+                    }
+                });
             });
 
             ed.onSetProgressState.add(function(ed, b, ti) {
@@ -181,13 +217,15 @@
                     // duplicates the embed tag
                     jQuery.each( body.getElementsByTagName('div'), function( i, node )
                     {
-                        if ( node && node.className.indexOf('mceNonEditable') !== -1 )
+                        if ( node && node.className.indexOf('ezoeItemNonEditable') !== -1 )
                             node.innerHTML = '';
                     });
                     jQuery.each( body.getElementsByTagName('span'), function( i, node )
                     {
-                        if ( node && node.className.indexOf('mceNonEditable') !== -1 )
+                        if ( node && node.className.indexOf('ezoeItemNonEditable') !== -1 )
                             node.innerHTML = '';
+                        else if ( node && node.className.indexOf('ezoeItemTempSpan') !== -1 && node.innerHTML.indexOf('&nbsp;') === 0 )
+                            node.firstChild.replaceData( 0, 1, ' ' );
                     });
 
                     // @todo: Might not be needed anymore now that we don't use save handler and overwrite html
@@ -260,36 +298,93 @@
         },
 
         _importClasses : function(e) {
-            var ed = this.editor, c = ed.controlManager.get('styleselect');
+            var ed = this.editor, ctrl = ed.controlManager.get('styleselect');
 
-            if (c.getLength() == 0) {
-                each(ed.dom.getClasses(), function(o) {
-                    c.add(o['class'], o['class']);
+            if (ctrl.getLength() == 0) {
+                each(ed.dom.getClasses(), function(o, idx) {
+                    var name = 'style_' + idx;
+
+                    ed.formatter.register(name, {
+                        inline : 'span',
+                        attributes : {'class' : o['class']},
+                        selector : '*'
+                    });
+
+                    ctrl.add(o['class'], name);
                 });
             }
         },
 
         _createStyleSelect : function(n) {
-            var t = this, ed = t.editor, cf = ed.controlManager, c = cf.createListBox('styleselect', {
+            var t = this, ed = t.editor, ctrlMan = ed.controlManager, ctrl;
+
+            // Setup style select box
+            ctrl = ctrlMan.createListBox('styleselect', {
                 title : 'advanced.style_select',
-                onselect : function(v) {
-                    if (c.selectedValue === v) {
-                        ed.execCommand('mceSetStyleInfo', 0, {command : 'removeformat'});
-                        c.select();
-                        return false;
-                    } else
-                        ed.execCommand('mceSetCSSClass', 0, v);
+                onselect : function(name) {
+                    var matches, formatNames = [];
+
+                    each(ctrl.items, function(item) {
+                        formatNames.push(item.value);
+                    });
+
+                    ed.focus();
+                    ed.undoManager.add();
+
+                    // Toggle off the current format
+                    matches = ed.formatter.matchAll(formatNames);
+                    if (!name || matches[0] == name)
+                        ed.formatter.remove(matches[0]);
+                    else
+                        ed.formatter.apply(name);
+
+                    ed.undoManager.add();
+                    ed.nodeChanged();
+
+                    return false; // No auto select
                 }
             });
 
-            if ( c ) {
-                each(ed.getParam('theme_advanced_styles', '', 'hash'), function(v, k) {
-                    if (v)
-                        c.add(t.editor.translate(k), v);
-                });
-    
-                c.onPostRender.add(function(ed, n) {
-                    if (!c.NativeListBox) {
+            // Handle specified format
+            ed.onInit.add(function() {
+                var counter = 0, formats = ed.getParam('style_formats');
+
+                if (formats) {
+                    each(formats, function(fmt) {
+                        var name, keys = 0;
+
+                        each(fmt, function() {keys++;});
+
+                        if (keys > 1) {
+                            name = fmt.name = fmt.name || 'style_' + (counter++);
+                            ed.formatter.register(name, fmt);
+                            ctrl.add(fmt.title, name);
+                        } else
+                            ctrl.add(fmt.title);
+                    });
+                } else {
+                    each(ed.getParam('theme_advanced_styles', '', 'hash'), function(val, key) {
+                        var name;
+
+                        if (val) {
+                            name = 'style_' + (counter++);
+
+                            ed.formatter.register(name, {
+                                inline : 'span',
+                                classes : val,
+                                selector : '*'
+                            });
+
+                            ctrl.add(t.editor.translate(key), name);
+                        }
+                    });
+                }
+            });
+
+            // Auto import classes if the ctrl box is empty
+            if (ctrl.getLength() == 0) {
+                ctrl.onPostRender.add(function(ed, n) {
+                    if (!ctrl.NativeListBox) {
                         Event.add(n.id + '_text', 'focus', t._importClasses, t);
                         Event.add(n.id + '_text', 'mousedown', t._importClasses, t);
                         Event.add(n.id + '_open', 'focus', t._importClasses, t);
@@ -299,13 +394,26 @@
                 });
             }
 
-            return c;
+            return ctrl;
         },
 
         _createFontSelect : function() {
             var c, t = this, ed = t.editor;
 
-            c = ed.controlManager.createListBox('fontselect', {title : 'advanced.fontdefault', cmd : 'FontName'});
+            c = ed.controlManager.createListBox('fontselect', {
+                title : 'advanced.fontdefault',
+                onselect : function(v) {
+                    ed.execCommand('FontName', false, v);
+
+                    // Fake selection, execCommand will fire a nodeChange and update the selection
+                    c.select(function(sv) {
+                        return v == sv;
+                    });
+
+                    return false; // No auto select
+                }
+            });
+
             if ( c ) {
                 each(ed.getParam('theme_advanced_fonts', t.settings.theme_advanced_fonts, 'hash'), function(v, k) {
                     c.add(ed.translate(k), v, {style : v.indexOf('dings') == -1 ? 'font-family:' + v : ''});
@@ -319,16 +427,21 @@
             var t = this, ed = t.editor, c, i = 0, cl = [];
 
             c = ed.controlManager.createListBox('fontsizeselect', {title : 'advanced.font_size', onselect : function(v) {
-                if (v.fontSize)
+                if (v['class']) {
+                    ed.focus();
+                    ed.undoManager.add();
+                    ed.formatter.toggle('fontsize_class', {value : v['class']});
+                    ed.undoManager.add();
+                    ed.nodeChanged();
+                } else
                     ed.execCommand('FontSize', false, v.fontSize);
-                else {
-                    each(t.settings.theme_advanced_font_sizes, function(v, k) {
-                        if (v['class'])
-                            cl.push(v['class']);
-                    });
 
-                    ed.editorCommands._applyInlineStyle('span', {'class' : v['class']}, {check_classes : cl});
-                }
+                // Fake selection, execCommand will fire a nodeChange and update the selection
+                c.select(function(sv) {
+                    return v == sv;
+                });
+
+                return false; // No auto select
             }});
 
             if (c) {
@@ -365,9 +478,9 @@
             }, t = this;
 
             c = t.editor.controlManager.createListBox('formatselect', {title : 'advanced.block', cmd : 'FormatBlock'});
-            if ( c ) {
-                each(explode(t.settings.theme_advanced_blockformats), function(v) {
-                    c.add(t.editor.translate(fmts[v]), v, {'class' : 'mce_formatPreview mce_' + v});
+            if (c) {
+                each(t.editor.getParam('theme_advanced_blockformats', t.settings.theme_advanced_blockformats, 'hash'), function(v, k) {
+                    c.add(t.editor.translate(k != v ? k : fmts[v]), v, {'class' : 'mce_formatPreview mce_' + v});
                 });
             }
 
@@ -459,7 +572,7 @@
             n = o.targetNode;
 
             // Add classes to first and last TRs
-            nl = DOM.stdMode ? DOM.select('tr', tb) : sc.rows; // Quick fix for IE 8
+            nl = DOM.stdMode ? sc.getElementsByTagName('tr') : sc.rows; // Quick fix for IE 8
             DOM.addClass(nl[0], 'mceFirst');
             DOM.addClass(nl[nl.length - 1], 'mceLast');
 
@@ -539,7 +652,7 @@
         },
 
         resizeTo : function(w, h) {
-            var ed = this.editor, s = ed.settings, e = DOM.get(ed.id + '_tbl'), ifr = DOM.get(ed.id + '_ifr'), dh;
+            var ed = this.editor, s = this.settings, e = DOM.get(ed.id + '_tbl'), ifr = DOM.get(ed.id + '_ifr');
 
             // Boundery fix box
             w = Math.max(s.theme_advanced_resizing_min_width || 100, w);
@@ -547,12 +660,18 @@
             w = Math.min(s.theme_advanced_resizing_max_width || 0xFFFF, w);
             h = Math.min(s.theme_advanced_resizing_max_height || 0xFFFF, h);
 
-            // Calc difference between iframe and container
-            dh = e.clientHeight - ifr.clientHeight;
-
             // Resize iframe and container
-            DOM.setStyle(ifr, 'height', h - dh);
-            DOM.setStyles(e, {width : w, height : h});
+            DOM.setStyle(e, 'height', '');
+            DOM.setStyle(ifr, 'height', h);
+
+            if (s.theme_advanced_resize_horizontal) {
+                DOM.setStyle(e, 'width', '');
+                DOM.setStyle(ifr, 'width', w);
+
+                // Make sure that the size is never smaller than the over all ui
+                if (w < e.clientWidth)
+                    DOM.setStyle(ifr, 'width', e.clientWidth);
+            }
         },
 
         destroy : function() {
@@ -575,18 +694,18 @@
             }
 
             // Create toolbar container at top
-            if (lo === 'top')
+            if (lo == 'top')
                 t._addToolbars(tb, o);
 
             // Create external toolbar
-            if (lo === 'external') {
+            if (lo == 'external') {
                 n = c = DOM.create('div', {style : 'position:relative'});
                 n = DOM.add(n, 'div', {id : ed.id + '_external', 'class' : 'mceExternalToolbar'});
                 DOM.add(n, 'a', {id : ed.id + '_external_close', href : 'javascript:;', 'class' : 'mceExternalClose'});
                 n = DOM.add(n, 'table', {id : ed.id + '_tblext', cellSpacing : 0, cellPadding : 0});
                 etb = DOM.add(n, 'tbody');
 
-                if (p.firstChild.className === 'mceOldBoxModel')
+                if (p.firstChild.className == 'mceOldBoxModel')
                     p.firstChild.appendChild(c);
                 else
                     p.insertBefore(c, p.firstChild);
@@ -618,7 +737,7 @@
                 });
             }
 
-            if (sl === 'top')
+            if (sl == 'top')
                 t._addStatusBar(tb, o);
 
             // Create iframe container
@@ -628,10 +747,10 @@
             }
 
             // Create toolbar container at bottom
-            if (lo === 'bottom')
+            if (lo == 'bottom')
                 t._addToolbars(tb, o);
 
-            if (sl === 'bottom')
+            if (sl == 'bottom')
                 t._addStatusBar(tb, o);
 
             return ic;
@@ -695,7 +814,7 @@
                     return;
 
                 // Compatiblity with 2.x
-                if (n === 'tablecontrols') {
+                if (n == 'tablecontrols') {
                     each(["table","|","row_props","cell_props","|","row_before","row_after","delete_row","|","col_before","col_after","delete_col","|","split_cells","merge_cells"], function(n) {
                         n = t.createControl(n, cf);
 
@@ -804,99 +923,53 @@
                         if (!o)
                             return;
 
-                        if (s.theme_advanced_resize_horizontal)
-                            c.style.width = Math.max(10, o.cw) + 'px';
-
-                        c.style.height = Math.max(10, o.ch) + 'px';
-                        DOM.get(ed.id + '_ifr').style.height = Math.max(10, parseInt(o.ch) + t.deltaHeight) + 'px';
+                        t.resizeTo(o.cw, o.ch);
                     });
                 }
 
                 ed.onPostRender.add(function() {
                     Event.add(ed.id + '_resize', 'mousedown', function(e) {
-                        var c, p, w, h, n, pa;
+                        var mouseMoveHandler1, mouseMoveHandler2,
+                            mouseUpHandler1, mouseUpHandler2,
+                            startX, startY, startWidth, startHeight, width, height, ifrElm;
 
-                        // Measure container
-                        c = DOM.get(ed.id + '_tbl');
-                        w = c.clientWidth;
-                        h = c.clientHeight;
+                        function resizeOnMove(e) {
+                            width = startWidth + (e.screenX - startX);
+                            height = startHeight + (e.screenY - startY);
 
-                        miw = s.theme_advanced_resizing_min_width || 100;
-                        mih = s.theme_advanced_resizing_min_height || 100;
-                        maw = s.theme_advanced_resizing_max_width || 0xFFFF;
-                        mah = s.theme_advanced_resizing_max_height || 0xFFFF;
-
-                        // Setup placeholder
-                        p = DOM.add(DOM.get(ed.id + '_parent'), 'div', {'class' : 'mcePlaceHolder'});
-                        DOM.setStyles(p, {width : w, height : h});
-
-                        // Replace with placeholder
-                        DOM.hide(c);
-                        DOM.show(p);
-
-                        // Create internal resize obj
-                        r = {
-                            x : e.screenX,
-                            y : e.screenY,
-                            w : w,
-                            h : h,
-                            dx : null,
-                            dy : null
+                            t.resizeTo(width, height);
                         };
 
-                        // Start listening
-                        mf = Event.add(DOM.doc, 'mousemove', function(e) {
-                            var w, h;
-
-                            // Calc delta values
-                            r.dx = e.screenX - r.x;
-                            r.dy = e.screenY - r.y;
-
-                            // Boundery fix box
-                            w = Math.max(miw, r.w + r.dx);
-                            h = Math.max(mih, r.h + r.dy);
-                            w = Math.min(maw, w);
-                            h = Math.min(mah, h);
-
-                            // Resize placeholder
-                            if (s.theme_advanced_resize_horizontal)
-                                p.style.width = w + 'px';
-
-                            p.style.height = h + 'px';
-
-                            return Event.cancel(e);
-                        });
-
-                        me = Event.add(DOM.doc, 'mouseup', function(e) {
-                            var ifr;
-
+                        function endResize(e) {
                             // Stop listening
-                            Event.remove(DOM.doc, 'mousemove', mf);
-                            Event.remove(DOM.doc, 'mouseup', me);
+                            Event.remove(DOM.doc, 'mousemove', mouseMoveHandler1);
+                            Event.remove(ed.getDoc(), 'mousemove', mouseMoveHandler2);
+                            Event.remove(DOM.doc, 'mouseup', mouseUpHandler1);
+                            Event.remove(ed.getDoc(), 'mouseup', mouseUpHandler2);
 
-                            c.style.display = '';
-                            DOM.remove(p);
-
-                            if (r.dx === null)
-                                return;
-
-                            ifr = DOM.get(ed.id + '_ifr');
-
-                            if (s.theme_advanced_resize_horizontal)
-                                c.style.width = Math.max(10, r.w + r.dx) + 'px';
-
-                            c.style.height = Math.max(10, r.h + r.dy) + 'px';
-                            ifr.style.height = Math.max(10, ifr.clientHeight + r.dy) + 'px';
-
+                            // Store away the size
                             if (s.theme_advanced_resizing_use_cookie) {
                                 Cookie.setHash("TinyMCE_" + ed.id + "_size", {
-                                    cw : r.w + r.dx,
-                                    ch : r.h + r.dy
+                                    cw : width,
+                                    ch : height
                                 });
                             }
-                        });
+                        };
 
-                        return Event.cancel(e);
+                        e.preventDefault();
+
+                        // Get the current rect size
+                        startX = e.screenX;
+                        startY = e.screenY;
+                        ifrElm = DOM.get(t.editor.id + '_ifr');
+                        startWidth = width = ifrElm.clientWidth;
+                        startHeight = height = ifrElm.clientHeight;
+
+                        // Register envent handlers
+                        mouseMoveHandler1 = Event.add(DOM.doc, 'mousemove', resizeOnMove);
+                        mouseMoveHandler2 = Event.add(ed.getDoc(), 'mousemove', resizeOnMove);
+                        mouseUpHandler1 = Event.add(DOM.doc, 'mouseup', endResize);
+                        mouseUpHandler2 = Event.add(ed.getDoc(), 'mouseup', endResize);
                     });
                 });
             }
@@ -905,56 +978,81 @@
             n = tb = null;
         },
 
-        _nodeChanged : function(ed, cm, n, co) {
-            var t = this, p, de = 0, v, c, c2, s = t.settings, mceNonEditable = false, div = false, header, type = '', jn;
-
-            if (s.readonly)
-                return;
+        _nodeChanged : function(ed, cm, n, co, ob) {
+            var t = this, p, de = 0, v, c, c2, s = t.settings, cl, fz, fn, formatNames, matches, ezoeItemNonEditable = false, div = false, header, type = '', jn;
 
             tinymce.each(t.stateControls, function(c) {
                 cm.setActive(c, ed.queryCommandState(t.controls[c][1]));
             });
+            
+            function getParent(name) {
+                var i, parents = ob.parents, func = name;
 
-            header = DOM.getParent(n, 'H1,H2,H3,H4,H5,H6');
-            p = DOM.getParent(n, 'DIV,SPAN');
+                if (typeof(name) == 'string') {
+                    if ( name.indexOf(',') === -1 ) {
+                        func = function(node) {
+                            return node.nodeName == name;
+                        };
+                    } else {
+                        name = ',' + name + ',';
+                        func = function(node) {
+                            return name.indexOf( ',' + node.nodeName + ',' ) !== -1;
+                        };
+                    }
+                    
+                }
+
+                for (i = 0, l = parents.length; i < l; i++) {
+                    if (func(parents[i]))
+                        return parents[i];
+                }
+            };
+
+            header = getParent('H1,H2,H3,H4,H5,H6');
+            p = getParent('DIV,SPAN');
             c = cm.get('object');
             c2 = cm.get('file')
             if ( c || c2 )
             {
-                if ( ( p && (p.nodeName === 'DIV' || p.nodeName === 'SPAN') && p.className.indexOf('mceNonEditable') !== -1 ) )
+                if ( ( p && (p.nodeName === 'DIV' || p.nodeName === 'SPAN') && p.className.indexOf('ezoeItemNonEditable') !== -1 ) )
                 {
-                    mceNonEditable = true;
-                    //console.log( 'mceNonEditable 1' );
+                    ezoeItemNonEditable = true;
                 }
-                else if ( (p = t.__getParentByTag( n, 'div,span', 'mceNonEditable') ) )
+                else if ( (p = t.__getParentByTag( n, 'div,span', 'ezoeItemNonEditable') ) )
                 {
-                	mceNonEditable = true;
-                	//console.log( 'mceNonEditable 2' );
+                    ezoeItemNonEditable = true;
                 }
-                //else
-                	//console.log( 'mceNonEditable 3' );
 
-                if ( mceNonEditable )
+                if ( ezoeItemNonEditable  )
                 {
-                	ed.selection.select( p );
-                	div = p.nodeName === 'DIV';
+                    ed.selection.select( p );
+                    div = p.nodeName === 'DIV';
                     n = p;
-                    type = p.className.indexOf('mceItemContentTypeFiles') !== -1 ? 'files' : 'objects';
+                    type = p.className.indexOf('ezoeItemContentTypeFiles') !== -1 ? 'files' : 'objects';
+
+                    // change parent array now that n has changed
+                    ob.parents = [];
+                    DOM.getParent(n, function(node) {
+                        if (node.nodeName == 'BODY')
+                            return true;
+
+                        ob.parents.push(node);
+                    });
                 }
 
                 if ( c )
                 {
-                    c.setActive( mceNonEditable && (!c2 || type === 'objects')  );
-                    c.setDisabled( header || (mceNonEditable && (type !== 'objects' && c2)) );
+                    c.setActive( ezoeItemNonEditable && (!c2 || type === 'objects')  );
+                    c.setDisabled( header || (ezoeItemNonEditable && (type !== 'objects' && c2)) );
                 }
                 if ( c2 )
                 {
-                    c2.setActive( mceNonEditable && (type === 'files')  );
-                    c2.setDisabled( header || (mceNonEditable && type !== 'files') );
+                    c2.setActive( ezoeItemNonEditable && (type === 'files')  );
+                    c2.setDisabled( header || (ezoeItemNonEditable && type !== 'files') );
                 }
             }
 
-            t.__setDisabled( mceNonEditable );
+            t.__setDisabled( ezoeItemNonEditable );
 
             cm.setDisabled('undo', !ed.undoManager.hasUndo() && !ed.typing);
             cm.setDisabled('redo', !ed.undoManager.hasRedo());
@@ -966,7 +1064,7 @@
                 c.setDisabled( header );
 
             // indent and outdent button code
-            p = DOM.getParent(n, 'UL,OL');
+            p = getParent('UL,OL');
             if (c = cm.get('outdent'))
             {
                 c.setDisabled( !p && !ed.queryCommandState('Outdent') );
@@ -985,7 +1083,7 @@
             }
 
             // table button code
-            p = DOM.getParent(n, 'td,th,caption');
+            p = getParent('TD,TH,CAPTION');
             if (p && p.nodeName === 'CAPTION') p = null;
             cm.setDisabled('table', header );
             cm.setDisabled('tablemenu', header );
@@ -1007,7 +1105,7 @@
             p = this.__mceJustifyTags.test( n.nodeName );
             if ( p )
                 jn = n;
-            else if ( p = this.__mceJustifyTags.test( n.parentNode.nodeName ) )
+            else if ( n.parentNode && (p = this.__mceJustifyTags.test( n.parentNode.nodeName )) )
                 jn = n.parentNode;
             if ( c = cm.get('justifyleft') )
             {
@@ -1038,7 +1136,7 @@
             }
 
             // link and anchor(inside next block) code
-            p = DOM.getParent(n, 'A');
+            p = getParent('A');
             if ( c = cm.get('link') )
             {
                 if ( !p || DOM.getAttrib(p, 'href') )
@@ -1054,31 +1152,25 @@
             }
 
             // buttons that are disabled when embed object tag is selectd
-            if ( mceNonEditable === false )
+            if ( ezoeItemNonEditable === false )
             {
                 if ( c = cm.get('anchor') )
                 {
                     c.setActive( !!p && DOM.getAttrib(p, 'id') && !DOM.getAttrib(p, 'href') );
-    
-                    if (tinymce.isWebKit)
-                    {
-                        p = DOM.getParent(n, 'IMG');
-                        c.setActive(!!p && DOM.getAttrib(p, 'mce_name') === 'a');
-                    }
                 }
                 
-                p = header || DOM.getParent(n, 'DIV');
+                p = header ? header : getParent('DIV');
                 if (p && (c = cm.get('pagebreak')))
                     c.setDisabled( !!p && DOM.hasClass(p, 'pagebreak') );
 
-                p = DOM.getParent(n, 'IMG');
+                p = getParent('IMG');
                 if (c = cm.get('image'))
                 {
-                    c.setActive(!!p && p.className.indexOf('mceItem') === -1);
+                    c.setActive(!!p && p.className.indexOf('ezoeItem') === -1);
                     c.setDisabled( header );
                 }
 
-                p = DOM.getParent(n, 'PRE');
+                p = getParent('PRE');
                 if (c = cm.get('literal'))
                 {
                     c.setActive(!!p );
@@ -1087,7 +1179,7 @@
 
                 if (c = cm.get('formatselect'))
                 {
-                    p = DOM.getParent(n, DOM.isBlock);
+                    p = getParent(DOM.isBlock);
                     if ( p && ( p.className === 'mceItemHidden' || p.nodeName === 'LI' || p.nodeName === 'UL' || p.nodeName === 'OL' ) )
                         c.setDisabled( true );
                     else if ( p )
@@ -1097,13 +1189,16 @@
 
             if (s.theme_advanced_path && s.theme_advanced_statusbar_location) {
                 p = DOM.get(ed.id + '_path') || DOM.add(ed.id + '_path_row', 'span', {id : ed.id + '_path'});
-                DOM.setHTML(p, '');
+                DOM.setHTML(p, '&nbsp;');
 
-                ed.dom.getParent(n, function(n) {
+                getParent(function(n) {
                     var na = n.nodeName.toLowerCase(), u, pi, ti = '', className = false;
 
+                    /*if (n.getAttribute('_mce_bogus'))
+                    return;
+*/
                     // Ignore non element and hidden elements
-                    if ( n.nodeType !== 1 || n.nodeName === 'BR' || DOM.hasClass(n, 'mceItemHidden') || DOM.hasClass(n, 'mceItemRemoved') )
+                    if ( n.nodeType != 1 || n.nodeName === 'BR' || (DOM.hasClass(n, 'mceItemHidden') || DOM.hasClass(n, 'mceItemRemoved')) )
                         return;
 
                    // seems like hasClass has some issues in ie..
@@ -1135,8 +1230,7 @@
                     na = na.replace(/mce\:/g, '');
 
                     // Handle node name
-                    switch (na)
-                    {
+                    switch (na) {
                         case 'tbody':
                         case 'thead':
                         case 'tfoot':
@@ -1159,7 +1253,7 @@
                         case 'custom':
                             if (v = DOM.getAttrib(n, 'style'))
                                 ti += 'style: ' + v + ' ';
-                            if ( n.nodeName === 'U' )
+                            if ( n.nodeName === 'U' || n.style.textDecoration === 'underline' )
                                 className = 'underline';
                             else if ( n.nodeName === 'SUB' )
                                 className = 'sub';
@@ -1174,14 +1268,13 @@
                     }
 
                     if (v = DOM.getAttrib(n, 'id'))
-                        ti = ti + 'id: ' + v + ' ';
+                        ti += 'id: ' + v + ' ';
 
-                    if (v = className || n.className)
+                    if (v = className ?  className : n.className)
                     {
-                        v = v.replace(/(webkit-[\w\-]+|Apple-[\w\-]+|mceItem\w+|mceVisualAid|mceNonEditable)/g, '');
+                        v = v.replace(/\b\s*(webkit|mce|Apple-|ezoeItem)\w+\s*\b/g, '')
 
-                        if ( v = jQuery.trim( v ) )
-                        {
+                        if (v) {
                             ti = ti + 'class: ' + v + ' ';
                             //if (na === 'embed' || na === 'custom' || DOM.isBlock(n))
                             naa = naa + '.' + v.replace(' ', '.');
@@ -1197,7 +1290,7 @@
                     //u = "javascript:tinymce.EditorManager.get('" + ed.id + "').theme._sel('" + (de++) + "');";
                     if ( s.theme_ez_statusbar_open_dialog )
                     {
-                        pi = DOM.create('a', {'href' : "javascript:;", 'onmousedown' : 'return false;', title : ti, 'class' : 'mcePath_' + (de++), 'onclick' : 'return false;'}, na);
+                        pi = DOM.create('a', {'href' : "javascript:;", onmousedown : "return false;", title : ti, 'class' : 'mcePath_' + (de++), 'onclick' : 'return false;'}, na);
                         Event.add( pi, 'click', function(e){
                             var x = t.__getTagCommand( n );
                             if (x) ed.execCommand( x.cmd, n || false, x.val );
@@ -1205,251 +1298,18 @@
                     }
                     else
                     {
-                        pi = DOM.create('a', {'href' : "javascript:;", 'onmousedown' : 'return false;', title : ti, 'class' : 'mcePath_' + (de++)}, na);
+                        pi = DOM.create('a', {'href' : "javascript:;", onmousedown : "return false;", title : ti, 'class' : 'mcePath_' + (de++)}, na);
                     }
 
-                    if (p.hasChildNodes()) {
+                    if (p.getElementsByTagName('a').length) {
                         p.insertBefore(DOM.doc.createTextNode(' \u00bb '), p.firstChild);
                         p.insertBefore(pi, p.firstChild);
-                    } else
+                    } else if ( p.firstChild ) // &nbsp;
+                        p.insertBefore(pi, p.firstChild);
+                    else
                         p.appendChild(pi);
                 }, ed.getBody());
             }
-        },
-
-        __getParentByTag: function( n, tag, className, type, checkElement )
-        {
-            if ( className ) className = ' ' + className + ' ';
-            tag = ',' + tag.toUpperCase() + ',';
-            while ( n !== undefined && n.nodeName !== undefined && n.nodeName !== 'BODY' )
-            {
-                if ( checkElement && tag.indexOf( ',' + n.nodeName + ',' ) !== -1
-                && ( !className || (' ' + n.className + ' ').indexOf( className ) !== -1 ) 
-                && ( !type || n.getAttribute('type') === type ) )
-                {
-                    return n;
-                }
-                n = n.parentNode;
-                checkElement = true;
-            }
-            return false;
-        },
-
-        /**
-         * Blocks most events when mceNonEditable element is selected
-         * activated by {@link this.__setDisabled()}
-         * 
-         * @param object ed Editor object
-         * @param object e Event object
-         */
-        __block : function(ed, e) {
-
-            if ( this.__disabled === false )
-                return true;
-
-            //console.log( 'mceNonEditable __block()' );
-            
-            e = e || window.event;            
-            var k = e.which || e.keyCode;
-
-            // Don't block arrow keys, page up/down, and F1-F12
-            if ((k > 32 && k < 41) || (k > 111 && k < 124))
-                return true;
-
-            if ( k === 8 || k === 46 )// Remove embed tag if user clicks del or backspace
-            {
-                var n = this.__getParentByTag( ed.selection.getNode(), 'DIV,SPAN', 'mceNonEditable', '', true );
-                if ( n !== undefined && n.parentNode && n.parentNode.removeChild !== undefined )
-                {
-                    // Avoid that several embed tags are removed at once if they are placed side by side
-                    if ( !this.__recursion )
-                    {
-                        this.__recursion = true;
-                        n.parentNode.removeChild( n );
-                        setTimeout(BIND( function(){ this.__recursion = false; }, this ), 50);
-                        ed.nodeChanged();
-                    }
-                }
-                else return true;
-            }
-            else if ( k === 13 )// user clicks enter, create paragraph after embed block
-            {
-                var n = this.__getParentByTag( ed.selection.getNode(), 'DIV', 'ezoeItemNonEditable', '', true );
-                if ( n !== undefined && n.parentNode && !this.__recursion )
-                {
-                    this.__recursion = true;
-                    var newNode = ed.dom.create('p', false, tinymce.isIE ? '&nbsp;' : '<br />' );
-                    ed.dom.insertAfter( newNode, n );
-                    ed.selection.select( newNode, true );
-                    setTimeout(BIND( function(){ this.__recursion = false; }, this ), 150);
-                    ed.nodeChanged();
-                }
-            }
-            else if ( k === 32 )// user clicks space, create space after embed inline
-            {
-                var n = this.__getParentByTag( ed.selection.getNode(), 'SPAN', 'ezoeItemNonEditable', '', true );
-                if ( n !== undefined && n.parentNode && !this.__recursion )
-                {
-                    this.__recursion = true;
-                    var newNode = ed.dom.doc.createTextNode(" ");
-                    ed.dom.insertAfter( newNode, n );
-                    ed.selection.select( newNode, true );
-                    setTimeout(BIND( function(){ this.__recursion = false; }, this ), 150);
-                    ed.nodeChanged();
-                }
-            }
-            return Event.cancel(e);
-        },
-
-        /**
-         * Disables/enables all buttons based on s parameter, where s is true if
-         * mceNonEditable element (embed objects) is selected. 
-         * 
-         * @param bool s
-         */
-        __setDisabled : function( s )
-        {
-            var t = this, ed = t.editor;
-
-            tinymce.each(ed.controlManager.controls, function(c){
-                if ( !c.settings.ezPlugin // define this as true to be able to avoid this forced disable fn
-                 &&( !c.settings.cmd || ',mceObject,mceFile,mceFullScreen,mceLink,unlink,JustifyLeft,JustifyCenter,JustifyRight,'.indexOf( ',' + c.settings.cmd + ',' ) === -1 ) )
-                {
-                    c.setDisabled( s );
-                    if ( s ) c.setActive( false );
-                }
-            });
-
-            if ( s !== t.__disabled )
-            {
-                if ( t.__disabled === undefined )
-                {
-                    ed.onKeyDown.addToTop( BIND( t.__block, t ) );
-                    ed.onKeyPress.addToTop( BIND( t.__block, t ) );
-                    ed.onKeyUp.addToTop( BIND( t.__block, t ) );
-                    ed.onPaste.addToTop( BIND( t.__block, t ) );
-                }
-                t.__disabled = s;
-            }
-        },
-
-        __simpleTagsToXmlHash:
-        {
-            'P' : 'paragraph',
-            'I' : 'emphasize',
-            'EM': 'emphasize',
-            'B' : 'strong',
-            'STRONG' : 'strong',
-            'PRE': 'literal',
-            'U': 'custom',
-            'SUB': 'custom',
-            'SUP': 'custom',
-            'H1': 'header',
-            'H2': 'header',
-            'H3': 'header',
-            'H4': 'header',
-            'H5': 'header',
-            'H6': 'header',
-            'TABLE': 'table',
-            'TH': 'th',
-            'TD': 'td',
-            'TR': 'tr',
-            'UL': 'ul',
-            'OL': 'ol',
-            'LI': 'li'
-        },
-        
-        __tagsToXml : function( n )
-        {
-            if ( this.__simpleTagsToXmlHash[ n.nodeName ] )
-                return this.__simpleTagsToXmlHash[ n.nodeName ];
-            switch( n.nodeName )
-            {
-                case 'A':
-                    return DOM.getAttrib(n, 'href') ? 'link' : 'anchor';
-                case 'DIV':
-                    if ( n.className.indexOf('mceNonEditable') !== -1 )
-                        return 'embed' + (DOM.getAttrib(n, 'inline') === 'true' ? '-inline' : '');
-                    else if ( DOM.getAttrib(n, 'type') === 'custom' )
-                        return 'custom';
-                    break;
-                case 'SPAN':
-                    if ( n.className.indexOf('mceNonEditable') !== -1 )
-                        return 'embed' + (DOM.getAttrib(n, 'inline') === 'true' ? '-inline' : '');
-                    else if ( DOM.getAttrib(n, 'type') === 'custom' )
-                        return 'custom';
-                    break;
-                case 'IMG':
-                    if ( DOM.getAttrib(n, 'type') === 'custom' )
-                        return 'custom';
-                    else
-                        return 'embed' + (DOM.getAttrib(n, 'inline') === 'true' ? '-inline' : '');
-                    break;
-            }
-            return false;
-        },
-        
-        __getTagCommand : function( n )
-        {
-            switch( n.nodeName )
-            {
-                case 'IMG':
-                    if ( DOM.getAttrib(n, 'type') === 'custom' )
-                        return {'cmd':'mceCustom', 'val': n.className.replace(/(webkit-[\w\-]+|Apple-[\w\-]+|mceItem\w+|mceVisualAid)/g, '') };
-                    else
-                        return {'cmd':'mceImage', 'val': ''};
-                case 'PRE':
-                    return {'cmd':'mceLiteral', 'val': ''};
-                case 'U':
-                    return {'cmd':'mceCustom', 'val': 'underline'};
-                case 'SUB':
-                    return {'cmd':'mceCustom', 'val': 'sub'};
-                case 'SUP':
-                    return {'cmd':'mceCustom', 'val': 'sup'};
-                case 'DIV':
-                case 'SPAN':
-                    if ( n.className.indexOf('mceNonEditable') !== -1 )
-                    {
-                        if ( n.className.indexOf('mceItemContentTypeFiles') !== -1 )
-                            return {'cmd':'mceFile', 'val': ''};
-                        return {'cmd':'mceObject', 'val': ''};
-                    }
-                    else if ( DOM.getAttrib(n, 'type') === 'custom' )
-                        return {'cmd':'mceCustom', 'val': n.className.replace(/(webkit-[\w\-]+|Apple-[\w\-]+|mceItem\w+|mceVisualAid)/g, '') };
-                    break;
-                case 'TABLE':
-                    return {'cmd':'mceInsertTable', 'val': ''};
-                case 'TR':
-                    return {'cmd':'mceTableRowProps', 'val': ''};
-                case 'TD':
-                case 'TH':
-                    return {'cmd':'mceTableCellProps', 'val': ''};
-                case 'A':
-                    if ( DOM.getAttrib(n, 'href') ) return {'cmd':'mceLink', 'val': ''};
-                    else return {'cmd':'mceInsertAnchor', 'val': ''};
-                default:
-                    var tagName = this.__tagsToXml( n );
-                    if ( tagName ) return {'cmd':'generalXmlTagPopup', 'val': tagName + '/' + n.nodeName};
-            }
-        },
-        
-        _generalXmlTagPopup : function( view, eurl, width, height, node )
-        {
-            var ed = this.editor, s = ed.settings;
-            if ( view && view.nodeName ) node = view;
-            if ( !view || view.nodeName ) view = '/tags/';
-
-            ed.windowManager.open({
-                url : s.ez_extension_url + view  + s.ez_contentobject_id + '/' + s.ez_contentobject_version + '/' + eurl,
-                width : width || 400,
-                height : height || 320,
-                scrollbars : true,
-                resizable : true,
-                inline : true
-            }, {
-                theme_url : this.url,
-                selected_node : ( node && node.nodeName ? node : false )
-            });
         },
 
         // These commands gets called by execCommand
@@ -1457,7 +1317,115 @@
         _sel : function(v) {
             this.editor.execCommand('mceSelectNodeDepth', false, v);
         },
-        
+
+        _mceInsertAnchor : function(ui, v) {
+            var ed = this.editor, n = ed.selection.getNode();
+            if ( ui.nodeName !== 'A' && (n = this.__getParentByTag( n, 'a', '', '', true )) && !DOM.getAttrib(n, 'href') )
+                ui = n;
+            this._generalXmlTagPopup( false, 'anchor', 0, 0, ui );
+        },
+
+        _mceCharMap : function() {
+            var ed = this.editor;
+
+            ed.windowManager.open({
+                url : this.url + '/charmap.htm',
+                width : 550,
+                height : 250,
+                inline : true
+            }, {
+                theme_url : this.url
+            });
+        },
+
+        _mceHelp : function() {
+            this._generalXmlTagPopup( '/dialog/', 'help', 480, 380 );
+        },
+
+        _mceColorPicker : function(ui, v) {
+            var ed = this.editor;
+
+            v = v || {};
+
+            ed.windowManager.open({
+                url : this.url + '/color_picker.htm',
+                width : 375 + parseInt(ed.getLang('ez.colorpicker_delta_width', 0)),
+                height : 250 + parseInt(ed.getLang('ez.colorpicker_delta_height', 0)),
+                close_previous : false,
+                inline : true
+            }, {
+                input_color : v.color,
+                func : v.func,
+                theme_url : this.url
+            });
+        },
+
+        _mceCodeEditor : function(ui, val) {
+            var ed = this.editor;
+
+            ed.windowManager.open({
+                url : this.url + '/source_editor.htm',
+                width : parseInt(ed.getParam("theme_advanced_source_editor_width", 720)),
+                height : parseInt(ed.getParam("theme_advanced_source_editor_height", 580)),
+                inline : true,
+                resizable : true,
+                maximizable : true
+            }, {
+                theme_url : this.url
+            });
+        },
+
+        _mceImage : function(ui, val) {
+            var ed = this.editor, e = ed.selection.getNode(), eurl = 'images/', type = '/upload/', el;
+
+            if ( ui.nodeName === 'IMG' )
+                e = ui;
+
+            if (e !== null && e.nodeName === 'IMG')
+            {
+                type = '/relations/';
+                eurl = 'auto/'; // need to set to auto in case this is attachment icon
+                el = e;
+                eurl += e.getAttribute('id') + '/' + e.getAttribute('inline') + '/' + e.getAttribute('alt');
+            }
+            this._generalXmlTagPopup( type, eurl, 500, 480, el )
+        },
+
+        _mceObject : function(ui, val)
+        {
+            var ed = this.editor, e = ed.selection.getNode(), eurl = 'objects/', type = '/upload/', el;
+
+            if ( (ui.nodeName === 'DIV' || ui.nodeName === 'SPAN') && ui.className.indexOf('ezoeItemNonEditable') !== -1 )
+                e = ui;
+
+            if ( e = this.__getParentByTag( e, 'div,span', 'ezoeItemNonEditable', '', true ) )
+            {
+                type = '/relations/';
+                el = e;
+                eurl += e.getAttribute('id') + '/' + e.getAttribute('inline') + '/' + e.getAttribute('alt');
+            }
+            this._generalXmlTagPopup( type, eurl, 500, 480, el );
+        },
+
+        _mceFile : function(ui, val)
+        {
+            var ed = this.editor, e = ed.selection.getNode(), eurl = 'files/', type = '/upload/', el;
+
+            if ( (ui.nodeName === 'DIV' || ui.nodeName === 'SPAN') && ui.className.indexOf('ezoeItemNonEditable') !== -1 )
+                e = ui;
+
+            if ( e = this.__getParentByTag( e, 'div,span', 'ezoeItemNonEditable', '', true ) )
+            {
+                type = '/relations/';
+                el = e;
+                eurl += e.getAttribute('id') + '/' + e.getAttribute('inline') + '/' + e.getAttribute('alt');
+            }
+            this._generalXmlTagPopup( type, eurl, 500, 480, el );
+        },
+
+        __mceJustifyTags : /^(TABLE|TD|TH|P|IMG|DIV|SPAN|H1|H2|H3|H4|H5|H6)$/i,
+        __mceJustifyBlockTags : /^(TABLE|IMG|DIV)$/i,
+
         _JustifyLeft : function( v ){
             return this.__mceJustify( 'left', v );
         },
@@ -1504,126 +1472,15 @@
             return false;
         },
 
-        __mceJustifyTags : /^(TABLE|TD|TH|P|IMG|DIV|SPAN|H1|H2|H3|H4|H5|H6)$/i,
-        __mceJustifyBlockTags : /^(TABLE|IMG|DIV)$/i,
-
-        _mceCharMap : function() {
-            var ed = this.editor;
-
-            ed.windowManager.open({
-                url : tinymce.baseURL + '/themes/ez/charmap.htm',
-                width : 550,
-                height : 250,
-                inline : true
-            }, {
-                theme_url : this.url
-            });
-        },
-
-        _mceHelp : function()
-        {
-            this._generalXmlTagPopup( '/dialog/', 'help', 480, 380 );
-        },
-
-        _mceColorPicker : function(ui, v) {
-            var ed = this.editor;
-
-            v = v || {};
-
-            ed.windowManager.open({
-                url : tinymce.baseURL + '/themes/ez/color_picker.htm',
-                width : 375 + parseInt(ed.getLang('ez.colorpicker_delta_width', 0)),
-                height : 250 + parseInt(ed.getLang('ez.colorpicker_delta_height', 0)),
-                close_previous : false,
-                inline : true
-            }, {
-                input_color : v.color,
-                func : v.func,
-                theme_url : this.url
-            });
-        },
-
-        _mceCodeEditor : function(ui, val) {
-            var ed = this.editor;
-
-            ed.windowManager.open({
-                url : tinymce.baseURL + '/themes/ez/source_editor.htm',
-                width : parseInt(ed.getParam("theme_advanced_source_editor_width", 720)),
-                height : parseInt(ed.getParam("theme_advanced_source_editor_height", 580)),
-                inline : true,
-                resizable : true,
-                maximizable : true
-            }, {
-                theme_url : this.url
-            });
-        },
-
-        _mceImage : function(ui, val)
-        {
-            var ed = this.editor, e = ed.selection.getNode(), eurl = 'images/', type = '/upload/', el;
-
-            if ( ui.nodeName === 'IMG' )
-                e = ui;
-
-            if (e !== null && e.nodeName === 'IMG')
-            {
-                type = '/relations/';
-                eurl = 'auto/'; // need to set to auto in case this is attachment icon
-                el = e;
-                eurl += e.getAttribute('id') + '/' + e.getAttribute('inline') + '/' + e.getAttribute('alt');
-            }
-            this._generalXmlTagPopup( type, eurl, 500, 480, el )
-        },
-
-        _mceObject : function(ui, val)
-        {
-            var ed = this.editor, e = ed.selection.getNode(), eurl = 'objects/', type = '/upload/', el;
-
-            if ( (ui.nodeName === 'DIV' || ui.nodeName === 'SPAN') && ui.className.indexOf('mceNonEditable') !== -1 )
-                e = ui;
-
-            if ( e = this.__getParentByTag( e, 'div,span', 'mceNonEditable', '', true ) )
-            {
-                type = '/relations/';
-                el = e;
-                eurl += e.getAttribute('id') + '/' + e.getAttribute('inline') + '/' + e.getAttribute('alt');
-            }
-            this._generalXmlTagPopup( type, eurl, 500, 480, el );
-        },
-
-        _mceFile : function(ui, val)
-        {
-            var ed = this.editor, e = ed.selection.getNode(), eurl = 'files/', type = '/upload/', el;
-
-            if ( (ui.nodeName === 'DIV' || ui.nodeName === 'SPAN') && ui.className.indexOf('mceNonEditable') !== -1 )
-                e = ui;
-
-            if ( e = this.__getParentByTag( e, 'div,span', 'mceNonEditable', '', true ) )
-            {
-                type = '/relations/';
-                el = e;
-                eurl += e.getAttribute('id') + '/' + e.getAttribute('inline') + '/' + e.getAttribute('alt');
-            }
-            this._generalXmlTagPopup( type, eurl, 500, 480, el );
-        },
-
         _mcePageBreak : function( ui, val )
         {
             var ed = this.editor, n = ed.selection.getNode();
             if ( n.nodeName === 'P' && n.parentNode.nodeName === 'BODY' )
-                ed.execCommand('mceInsertRawHTML', false, '</p><div type="custom" class="mceItemCustomTag pagebreak"><p>pagebreak</p></div><p>');
+                ed.execCommand('mceInsertRawHTML', false, '</p><div type="custom" class="ezoeItemCustomTag pagebreak"><p>pagebreak</p></div><p>');
             else if ( n.nodeName === 'BODY' )
-                ed.execCommand ('mceInsertRawHTML', false, '<div type="custom" class="mceItemCustomTag pagebreak"><p>pagebreak</p></div>');
+                ed.execCommand ('mceInsertRawHTML', false, '<div type="custom" class="ezoeItemCustomTag pagebreak"><p>pagebreak</p></div>');
             else
                 alert( 'Not a suported location for a pagebreak, place it in the root of your document!' );
-        },
-
-        _mceInsertAnchor : function(ui, v)
-        {
-            var ed = this.editor, n = ed.selection.getNode();
-            if ( ui.nodeName !== 'A' && (n = this.__getParentByTag( n, 'a', '', '', true )) && !DOM.getAttrib(n, 'href') )
-                ui = n;
-            this._generalXmlTagPopup( false, 'anchor', 0, 0, ui );
         },
 
         _mceCustom : function(ui, v)
@@ -1636,8 +1493,7 @@
             this._generalXmlTagPopup( false, 'literal', 0, 0, ui );
         },
 
-        _mceLink : function(ui, v)
-        {
+        _mceLink : function(ui, val) {
             var ed = this.editor, n = ed.selection.getNode();
             if ( ui.nodeName !== 'A' && (n = this.__getParentByTag( n, 'a', '', '', true )) && DOM.getAttrib(n, 'href') )
                 ui = n;
@@ -1648,7 +1504,8 @@
             var ed = this.editor;
 
             ed.windowManager.confirm('ez.newdocument', function(s) {
-                if (s) ed.execCommand('mceSetContent', false, '');
+                if (s)
+                    ed.execCommand('mceSetContent', false, '');
             });
         },
 
@@ -1676,6 +1533,9 @@
             });
         },
 
+        /**
+         * Custom TinyMCE OE command for disabling editor
+         */
         _mceDisableEditor : function()
         {
             var ed = this.editor;
@@ -1684,11 +1544,17 @@
             this.__appendHiddenInputAndSubmit( 'CustomActionButton[' + ed.settings.ez_attribute_id + '_disable_editor]' );
         },
 
+        /**
+         * Custom TinyMCE OE command for discarding draft
+         */
         _mceDiscard : function()
         {
             this.__appendHiddenInputAndSubmit( 'DiscardButton' );
         },
 
+        /**
+         * Custom TinyMCE OE command for storing draft
+         */
         _mceStoreDraft : function()
         {
             var ed = this.editor;
@@ -1697,6 +1563,9 @@
             this.__appendHiddenInputAndSubmit( 'StoreButton' );
         },
 
+        /**
+         * Custom TinyMCE OE command for publishing draft
+         */
         _mcePublishDraft : function()
         {
             var ed = this.editor;
@@ -1705,6 +1574,12 @@
             this.__appendHiddenInputAndSubmit( 'PublishButton' );
         },
 
+        /**
+         * Reusable function for sending form with custom form data
+         * 
+         * @param string name Name of custom form element 
+         * @param string value Value of custom form element 
+         */
         __appendHiddenInputAndSubmit : function( name, value )
         {
             var ed = this.editor, inp, formObj = tinymce.DOM.get(ed.id).form || tinymce.DOM.getParent(ed.id, 'form');
@@ -1723,6 +1598,274 @@
                 ed.nodeChanged();
             } else
                 ed.windowManager.alert("Error: No form element found.");
+        },
+        
+        /**
+         * Custom function for getting parent element that matches parameters
+         * 
+         * @param node n
+         * @param string tag
+         * @param string className
+         * @param string type (checks type attribute on node if set)
+         * @param bool checkElement Check n as well as parents if true
+         */
+        __getParentByTag: function( n, tag, className, type, checkElement )
+        {
+            if ( className ) className = ' ' + className + ' ';
+            tag = ',' + tag.toUpperCase() + ',';
+            while ( n && n.nodeName !== undefined && n.nodeName !== 'BODY' )
+            {
+                if ( checkElement && tag.indexOf( ',' + n.nodeName + ',' ) !== -1
+                && ( !className || (' ' + n.className + ' ').indexOf( className ) !== -1 ) 
+                && ( !type || n.getAttribute('type') === type ) )
+                {
+                    return n;
+                }
+                n = n.parentNode;
+                checkElement = true;
+            }
+            return false;
+        },
+
+        /**
+         * Blocks most events when ezoeItemNonEditable element is selected
+         * activated by {@link this.__setDisabled()}
+         * 
+         * @param object ed Editor object
+         * @param object e Event object
+         */
+        __block : function(ed, e) {
+
+            if ( this.__disabled === false )
+                return true;
+
+            //console.log( 'ezoeItemNonEditable __block()' );
+            e = e || window.event;            
+            var k = e.which || e.keyCode;
+
+            // Don't block arrow keys, page up/down, and F1-F12
+            if ((k > 32 && k < 41) || (k > 111 && k < 124))
+                return true;
+
+            if ( k === 8 || k === 46 )// Remove embed tag if user clicks del or backspace
+            {
+                var n = this.__getParentByTag( ed.selection.getNode(), 'DIV,SPAN', 'ezoeItemNonEditable', '', true );
+                if ( n !== undefined && n.parentNode&& n.parentNode.removeChild !== undefined )
+                {
+                    // Avoid that several embed tags are removed at once if they are placed side by side
+                    if ( !this.__recursion )
+                    {
+                        this.__recursion = true;
+                        n.parentNode.removeChild( n );
+                        setTimeout(BIND( function(){ this.__recursion = false; }, this ), 50);
+                        ed.nodeChanged();
+                    }
+                }
+                else return true;
+            }
+            else if ( k === 13 && !this.__recursion )// user clicks enter, create paragraph after embed block
+            {
+                var n = this.__getParentByTag( ed.selection.getNode(), 'DIV', 'ezoeItemNonEditable', '', true );
+                if ( n !== undefined && n.parentNode )
+                {
+                    this.__recursion = true;
+                    var newNode = ed.dom.create('p', false, tinymce.isIE ? '&nbsp;' : '<br />' );
+                    ed.dom.insertAfter( newNode, n );
+                    ed.selection.select( newNode, true );
+                    setTimeout(BIND( function(){ this.__recursion = false; }, this ), 150);
+                    ed.nodeChanged();
+                }
+            }
+            else if ( k === 32 && !this.__recursion )// user clicks space, create space after embed inline
+            {
+                var n = this.__getParentByTag( ed.selection.getNode(), 'SPAN', 'ezoeItemNonEditable', '', true );
+                if ( n !== undefined && n.parentNode )
+                {
+                    this.__recursion = true;
+                    /* This gets tricky, basically it doesn't work to select a text node, carret will end up being inside
+                     * relation span. So we create a span that will not show up in path and will be stripped by parser.
+                     * Furthermore we cleanup the &nbsp; during save steps and change it to whitespace.
+                     */
+                    var newNode = ed.dom.create('span', {'class': 'mceItemHidden ezoeItemTempSpan'}, '&nbsp;' );
+                    ed.dom.insertAfter( newNode, n );
+                    ed.selection.select( newNode );
+                    ed.selection.collapse( false );
+                    setTimeout(BIND( function(){ this.__recursion = false; }, this ), 150);
+                    ed.nodeChanged();
+                }
+            }
+            return Event.cancel(e);
+        },
+
+        /**
+         * Disables/enables all buttons based on s parameter, where s is true if
+         * ezoeItemNonEditable element (embed objects) is selected. 
+         * 
+         * @param bool s
+         */
+        __setDisabled : function( s )
+        {
+            var t = this, ed = t.editor;
+
+            tinymce.each(ed.controlManager.controls, function(c){
+                if ( !c.settings.ezPlugin // define this as true to be able to avoid this forced disable fn
+                 &&( !c.settings.cmd || ',mceObject,mceFile,mceFullScreen,mceLink,unlink,JustifyLeft,JustifyCenter,JustifyRight,'.indexOf( ',' + c.settings.cmd + ',' ) === -1 ) )
+                {
+                    c.setDisabled( s );
+                    if ( s ) c.setActive( false );
+                }
+            });
+
+            if ( s !== t.__disabled )
+            {
+                if ( t.__disabled === undefined )
+                {
+                    ed.onKeyDown.addToTop( BIND( t.__block, t ) );
+                    ed.onKeyPress.addToTop( BIND( t.__block, t ) );
+                    ed.onKeyUp.addToTop( BIND( t.__block, t ) );
+                    ed.onPaste.addToTop( BIND( t.__block, t ) );
+                }
+                t.__disabled = s;
+            }
+        },
+
+        /**
+         * Hash for simple tag name to ezxml name mappings
+         */
+        __simpleTagsToXmlHash:
+        {
+            'P' : 'paragraph',
+            'I' : 'emphasize',
+            'EM': 'emphasize',
+            'B' : 'strong',
+            'STRONG' : 'strong',
+            'PRE': 'literal',
+            'U': 'custom',
+            'SUB': 'custom',
+            'SUP': 'custom',
+            'H1': 'header',
+            'H2': 'header',
+            'H3': 'header',
+            'H4': 'header',
+            'H5': 'header',
+            'H6': 'header',
+            'TABLE': 'table',
+            'TH': 'th',
+            'TD': 'td',
+            'TR': 'tr',
+            'UL': 'ul',
+            'OL': 'ol',
+            'LI': 'li'
+        },
+
+        /**
+         * Maps tag name to ezxmltext tag name, uses simple mapping hash if tag name exists there.
+         * 
+         * @param node n
+         */
+        __tagsToXml : function( n )
+        {
+            if ( this.__simpleTagsToXmlHash[ n.nodeName ] )
+                return this.__simpleTagsToXmlHash[ n.nodeName ];
+            switch( n.nodeName )
+            {
+                case 'A':
+                    return DOM.getAttrib(n, 'href') ? 'link' : 'anchor';
+                case 'DIV':
+                    if ( n.className.indexOf('ezoeItemNonEditable') !== -1 )
+                        return 'embed' + (DOM.getAttrib(n, 'inline') === 'true' ? '-inline' : '');
+                    else if ( DOM.getAttrib(n, 'type') === 'custom' )
+                        return 'custom';
+                    break;
+                case 'SPAN':
+                    if ( n.className.indexOf('ezoeItemNonEditable') !== -1 )
+                        return 'embed' + (DOM.getAttrib(n, 'inline') === 'true' ? '-inline' : '');
+                    else if ( DOM.getAttrib(n, 'type') === 'custom' )
+                        return 'custom';
+                    else if ( n.style.textDecoration === 'underline' )
+                        return 'custom';
+                    break;
+                case 'IMG':
+                    if ( DOM.getAttrib(n, 'type') === 'custom' )
+                        return 'custom';
+                    else
+                        return 'embed' + (DOM.getAttrib(n, 'inline') === 'true' ? '-inline' : '');
+                    break;
+            }
+            return false;
+        },
+
+        /**
+         * Get related TinyMCE (OE custom) command based on node
+         * 
+         * @param node n
+         */
+        __getTagCommand : function( n )
+        {
+            switch( n.nodeName )
+            {
+                case 'IMG':
+                    if ( DOM.getAttrib(n, 'type') === 'custom' )
+                        return {'cmd':'mceCustom', 'val': n.className.replace(/(webkit-[\w\-]+|Apple-[\w\-]+|mceItem\w+|ezoeItem\w+|mceVisualAid)/g, '') };
+                    else
+                        return {'cmd':'mceImage', 'val': ''};
+                case 'PRE':
+                    return {'cmd':'mceLiteral', 'val': ''};
+                case 'U':
+                    return {'cmd':'mceCustom', 'val': 'underline'};
+                case 'SUB':
+                    return {'cmd':'mceCustom', 'val': 'sub'};
+                case 'SUP':
+                    return {'cmd':'mceCustom', 'val': 'sup'};
+                case 'DIV':
+                case 'SPAN':
+                    if ( n.className.indexOf('ezoeItemNonEditable') !== -1 )
+                    {
+                        if ( n.className.indexOf('ezoeItemContentTypeFiles') !== -1 )
+                            return {'cmd':'mceFile', 'val': ''};
+                        return {'cmd':'mceObject', 'val': ''};
+                    }
+                    else if ( DOM.getAttrib(n, 'type') === 'custom' )
+                        return {'cmd':'mceCustom', 'val': n.className.replace(/(webkit-[\w\-]+|Apple-[\w\-]+|mceItem\w+|ezoeItem\w+|mceVisualAid)/g, '') };
+                    else if ( n.style.textDecoration === 'underline' )
+                        return {'cmd':'mceCustom', 'val': 'underline' };
+                    break;
+                case 'TABLE':
+                    return {'cmd':'mceInsertTable', 'val': ''};
+                case 'TR':
+                    return {'cmd':'mceTableRowProps', 'val': ''};
+                case 'TD':
+                case 'TH':
+                    return {'cmd':'mceTableCellProps', 'val': ''};
+                case 'A':
+                    if ( DOM.getAttrib(n, 'href') ) return {'cmd':'mceLink', 'val': ''};
+                    else return {'cmd':'mceInsertAnchor', 'val': ''};
+                default:
+                    var tagName = this.__tagsToXml( n );
+                    if ( tagName ) return {'cmd':'generalXmlTagPopup', 'val': tagName + '/' + n.nodeName};
+            }
+        },
+
+        /**
+         * General popup function for tag dialogs
+         */
+        _generalXmlTagPopup : function( view, eurl, width, height, node )
+        {
+            var ed = this.editor, s = ed.settings;
+            if ( view && view.nodeName ) node = view;
+            if ( !view || view.nodeName ) view = '/tags/';
+
+            ed.windowManager.open({
+                url : s.ez_extension_url + view  + s.ez_contentobject_id + '/' + s.ez_contentobject_version + '/' + eurl,
+                width : width || 400,
+                height : height || 320,
+                scrollbars : true,
+                resizable : true,
+                inline : true
+            }, {
+                theme_url : this.url,
+                selected_node : ( node && node.nodeName ? node : false )
+            });
         },
 
         _ufirst : function(s) {

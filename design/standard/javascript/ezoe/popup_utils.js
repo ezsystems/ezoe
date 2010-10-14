@@ -64,9 +64,13 @@ var eZOEPopupUtils = {
         tagEditTitleText: ''
     },
     
+    /**
+     * Initialize page with values from current editor element or if not defined; default values and settings
+     *
+     * @param {Object} settings Hash with settings, is saved to eZOEPopupUtils.settings for the rest of the execution.
+     */
     init: function( settings )
     {
-        // Initialize page with default values and settings
     	eZOEPopupUtils.settings = jQuery.extend( false, eZOEPopupUtils.settings, settings );
 
         var ed = tinyMCEPopup.editor, el = tinyMCEPopup.getWindowArg('selected_node'), s = eZOEPopupUtils.settings;
@@ -146,9 +150,15 @@ var eZOEPopupUtils = {
             } );
     },
 
+    /**
+     * Save changes from form values to editor element attributes but first:
+     * - validate values according to class names and stop if not valid
+     * - create editor element if it does not exist either using callbacks or defaults
+     * - or call optional edit callback to edit/fixup existing element
+     * - Set attributes from form values using callback if set or default TinyMCE handler
+     */
     save: function()
     {
-        // save changes from form values to element attributes
         var ed = tinyMCEPopup.editor, s = eZOEPopupUtils.settings, n, arr, tmp, f = document.forms[0];
 
         if ( s.tagSelector && s.tagSelector.size() && s.tagSelector[0].value )
@@ -204,7 +214,7 @@ var eZOEPopupUtils = {
                 ed.execCommand('mceInsertLink', false, args, {skip_undo : 1} );
                 s.editorElement = ed.dom.get('__mce_tmp');
                 // fixup if we are inside embed tag
-                if ( tmp = eZOEPopupUtils.getParentByTag( s.editorElement, 'div,span', 'mceNonEditable' ) )
+                if ( tmp = eZOEPopupUtils.getParentByTag( s.editorElement, 'div,span', 'ezoeItemNonEditable' ) )
                 {
                     var span = document.createElement("span");
                     span.innerHTML = s.editorElement.innerHTML;
@@ -237,13 +247,24 @@ var eZOEPopupUtils = {
         if ( s.editorElement )
         {
             if ( s.tagAttributeEditor )
-                s.tagAttributeEditor.call( eZOEPopupUtils, ed, s.editorElement, args );
+            {
+                n = s.tagAttributeEditor.call( eZOEPopupUtils, ed, s.editorElement, args );
+                if ( n && n.nodeName )
+                    s.editorElement = n;
+            }
             else
                 ed.dom.setAttribs( s.editorElement, args );
 
             if ( args['id'] === undefined )
                 ed.dom.setAttrib( s.editorElement, 'id', '' );
-            //ed.selection.select( s.editorElement );
+
+            if ( 'TABLE'.indexOf( s.editorElement.tagName ) === 0 )
+                ed.selection.select( jQuery( s.editorElement ).find( "tr:first-child > *:first-child" ).get(0), true );
+            else if ( 'DIV'.indexOf( s.editorElement.tagName ) === 0 )
+                ed.selection.select( s.editorElement );
+            else
+                ed.selection.select( s.editorElement, true );
+            ed.nodeChanged();
         }
         ed.execCommand('mceEndUndoLevel');
     
@@ -252,12 +273,17 @@ var eZOEPopupUtils = {
         return false;
     },
 
-    /*
+    /**
      * Insert raw html and tries to cleanup any issues that might happen (related to paragraphs and block tags)
+     * makes sure block nodes do not break the html structure they are inserted into
+     *
+     * @param ed TinyMCE editor instance
+     * @param {String} html
+     * @param {String} id
+     * @return HtmlElement
      */
     insertHTMLCleanly: function( ed, html, id )
     {
-        // makes sure block nodes do not break the html structure they are inserted into
         var paragraphCleanup = false, newElement;
         if ( html.indexOf( '<div' ) === 0 || html.indexOf( '<pre' ) === 0 )
         {
@@ -276,8 +302,14 @@ var eZOEPopupUtils = {
         return newElement;
     },
 
-    /*
+    /**
      * Only for use for block tags ( appends or prepends tag relative to current tag )
+     *
+     * @param ed TinyMCE editor instance
+     * @param {String} tag Tag Name
+     * @param {String} content Inner content of tag, can be html, but only tested with plain text
+     * @param {Array} args Optional parameter that is passed as second parameter to ed.dom.setAttribs() if set.
+     * @return HtmlElement
      */
     insertTagCleanly: function( ed, tag, content, args )
     {
@@ -301,10 +333,15 @@ var eZOEPopupUtils = {
         return newElement;
     },
     
+    /**
+     * Cleanup broken paragraphs after inserting block tags into paragraphs
+     *
+     * @param ed TinyMCE editor instance
+     * @param {HtmlElement} el
+     */
     paragraphCleanup: function( ed, el )
     {
         var emptyContent = [ '', '<br>', '<BR>', '&nbsp;', ' ', " " ];
-        // cleanup broken paragraphs after inserting block tags into paragraphs
         if ( el.previousSibling
              && el.previousSibling.nodeName.toLowerCase() === 'p'
              && ( !el.previousSibling.hasChildNodes() || jQuery.inArray( el.previousSibling.innerHTML, emptyContent ) !== -1 ))
@@ -319,9 +356,14 @@ var eZOEPopupUtils = {
        }
     },
 
+    /**
+     * Removes some unwanted stuff from attribute values
+     *
+     * @param {String} value
+     * @return {String}
+     */
     safeHtml: function( value )
     {
-        // removes some unwanted stuff from attribute values
         value = value.replace(/&/g, '&amp;');
         value = value.replace(/\"/g, '&quot;');
         value = value.replace(/</g, '&lt;');
@@ -341,9 +383,14 @@ var eZOEPopupUtils = {
         tinyMCEPopup.close();
     },
 
+    /**
+     * Removes all children of a node safly (especially needed to clear select options and table data)
+     * Also disables tag if it was an select
+     *
+     * @param {HtmlElement} node
+     */
     removeChildren: function( node )
     {
-        // removes all children of a node
         if ( !node  ) return;
         while ( node.hasChildNodes() )
         {
@@ -352,9 +399,15 @@ var eZOEPopupUtils = {
         if ( node.nodeName === 'SELECT' ) node.disabled = true;
     },
 
+    /**
+     * Adds options to a selection based on object with name / value pairs or array
+     * and disables select tag if no options where added.
+     *
+     * @param {HtmlElement} node
+     * @param {Object|Array} o
+     */
     addSelectOptions: function( node, o )
     {
-        // ads options to a selection based on object with name / value pairs or array
         if ( !node || node.nodeName !== 'SELECT'  ) return;
         var opt, c = 0, i;
         if (  o.constructor.toString().indexOf('Array') === -1 )
@@ -380,10 +433,14 @@ var eZOEPopupUtils = {
         node.disabled = c === 0;
     },
 
+    /**
+     * Get custom attribute value from form values and map them to style value as well
+     *
+     * @param {HtmlElement} node
+     * @return {Object} Hash of attributes and their values for use on editor elements
+     */
     getCustomAttributeArgs: function( node )
     {
-        // creates custom attribute value from form values
-        // global objects: ez
         var args = {
             'customattributes': '',
             'style': ''
@@ -391,13 +448,15 @@ var eZOEPopupUtils = {
         var customArr = [];
         jQuery( '#' + node + ' input,#' + node + ' select' ).each(function( i, el )
         {
-            var o = jQuery( el ), name = el.name, value = o[0].value, style;
+            var o = jQuery( el ), name = o.attr("name"), value, style;
         	if ( o.hasClass('mceItemSkip') || !name ) return;
         	if ( o.attr("type") === 'checkbox' && !o.attr("checked") ) return;
 
             // see if there is a save hander that needs to do some work on the value
             if ( handler[el.id] !== undefined && handler[el.id].call !== undefined )
-                value = handler[el.id].call( o, el, value );
+                value = handler[el.id].call( o, el, o.val() );
+            else
+                value = o.val()
 
             // add to styles if custom attibute is defined in customAttributeStyleMap
             if ( value !== '' && s.customAttributeStyleMap && s.customAttributeStyleMap[name] !== undefined  )
@@ -413,23 +472,39 @@ var eZOEPopupUtils = {
         return args;
     },
 
+    /**
+     * Get general attributes for tag from form values
+     *
+     * @param {HtmlElement} node
+     * @return {Object} Hash of attributes and their values for use on editor elements
+     */
     getGeneralAttributeArgs: function( node )
     {
         var args = {}, handler = eZOEPopupUtils.settings.customAttributeSaveHandler;
-        // set general attributes for tag
         jQuery( '#' + node + ' input,#' + node + ' select' ).each(function( i, el )
         {
-        	var o = jQuery( el ), name = el.name;
+            var o = jQuery( el ), name = o.attr("name");
         	if ( o.hasClass('mceItemSkip') || !name ) return;
         	if ( o.attr("type") === 'checkbox' && !o.attr("checked") ) return;
-            args[name] = el.value;
             // see if there is a save hander that needs to do some work on the value
             if ( handler[el.id] !== undefined && handler[el.id].call !== undefined )
-                args[name] = handler[el.id].call( o, el, args[name] );
+                args[name] = handler[el.id].call( o, el, o.val() );
+            else
+                args[name] = o.val()
        });
        return args;
     },
 
+    /**
+     * Get parent tag by tag name with optional class name and type check
+     *
+     * @param {HtmlElement} n
+     * @param {String} tag
+     * @param {String} className
+     * @param {String} type
+     * @param {Boolean} checkElement Checks n as well if true
+     * @return {HtmlElement|False}
+     */
     getParentByTag: function( n, tag, className, type, checkElement )
     {
         if ( className ) className = ' ' + className + ' ';
@@ -510,13 +585,21 @@ var eZOEPopupUtils = {
     initGeneralmAttributes: function( node, editorElement )
     {
         // init general attributes form values from tinymce element values
-        var handler = eZOEPopupUtils.settings.customAttributeInitHandler;
+        var handler = eZOEPopupUtils.settings.customAttributeInitHandler, cssReplace = function( s ){
+            s = s.replace(/(webkit-[\w\-]+|Apple-[\w\-]+|mceItem\w+|ezoeItem\w+|mceVisualAid)/g, '');
+            if ( !eZOEPopupUtils.settings.cssClass )
+                return s;
+            jQuery.each(eZOEPopupUtils.settings.cssClass.split(' '), function(index, value){
+                s = s.replace( value, '' );
+            });
+            return s;
+        };
         jQuery( '#' + node + ' input,#' + node + ' select' ).each(function( i, el )
         {
         	var o = jQuery( el ), name = el.name;
         	if ( o.hasClass('mceItemSkip') ) return;
             if ( name === 'class' )
-                var v = jQuery.trim( editorElement.className.replace(/(webkit-[\w\-]+|Apple-[\w\-]+|mceItem\w+|mceVisualAid|mceNonEditable)/g, '').replace( /eZOEPopupUtils.settings.cssClass.replace(' ', '|')/, '' ) );
+                var v = jQuery.trim( cssReplace( editorElement.className ) );
             else 
                 var v = tinyMCEPopup.editor.dom.getAttrib( editorElement, name );//editorElement.getAttribute( name );
             if ( v !== false && v !== null && v !== undefined )
@@ -527,7 +610,7 @@ var eZOEPopupUtils = {
                     el.checked = v == el.value;
                 else if ( el.type === 'select-one' )
                 {
-                    // Make sure selecion has value before we set it (#014986)
+                    // Make sure selection has value before we set it (#014986)
                     for( var i = 0, l = el.options.length; i < l; i++ )
                     {
                         if ( el.options[i].value == v ) el.value = v;
@@ -644,7 +727,7 @@ var eZOEPopupUtils = {
     browseCallBack: function( r, mode, emptyCallBack )
     {
         // call back function for the browse() ajax call, generates the html markup with paging and path header (if defined)
-        mode = mode || 'browse';
+        mode = mode ? mode : 'browse';
         jQuery('#' + mode + '_progress' ).hide();
         ez.script( 'eZOEPopupUtils.ajaxLoadResponse=' + r.responseText );
         var ed = tinyMCEPopup.editor, tbody = jQuery('#' + mode + '_box_prev tbody')[0], thead = jQuery('#' + mode + '_box_prev thead')[0], tfoot = jQuery('#' + mode + '_box_prev tfoot')[0], tr, td, tag, hasImage, emptyList = true;

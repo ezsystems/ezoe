@@ -1,8 +1,11 @@
 /**
- * $Id: editor_plugin_src.js 923 2008-09-09 16:45:29Z spocke $
+ * editor_plugin_src.js
  *
- * @author Moxiecode
- * @copyright Copyright � 2004-2008, Moxiecode Systems AB, All rights reserved.
+ * Copyright 2009, Moxiecode Systems AB
+ * Released under LGPL License.
+ *
+ * License: http://tinymce.moxiecode.com/license
+ * Contributing: http://tinymce.moxiecode.com/contributing
  */
 
 (function() {
@@ -107,7 +110,6 @@
 					});
 
 					t.fullscreenEditor.render();
-					tinyMCE.add(t.fullscreenEditor);
 
 					t.fullscreenElement = new tinymce.dom.Element('mce_fullscreen_container');
 					t.fullscreenElement.update();
@@ -115,9 +117,13 @@
 					DOM.win.scrollTo(0, 0);
 
 					t.resizeFunc = tinymce.dom.Event.add(DOM.win, 'resize', function() {
-						var vp = tinymce.DOM.getViewPort();
+						var vp = tinymce.DOM.getViewPort(), fed = t.fullscreenEditor, outerSize, innerSize;
 
-						t.fullscreenEditor.theme.resizeTo(vp.w, vp.h);
+						// Get outer/inner size to get a delta size that can be used to calc the new iframe size
+						outerSize = fed.dom.getSize(fed.getContainer().firstChild);
+						innerSize = fed.dom.getSize(fed.getContainer().getElementsByTagName('iframe')[0]);
+
+						fed.theme.resizeTo(vp.w - outerSize.w + innerSize.w, vp.h - outerSize.h + innerSize.h);
 					});
 				}
 			});

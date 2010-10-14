@@ -21,6 +21,7 @@ eZ Online Editor 5.x extension Changelog
   (merged from trunk rev. 282)
 - Fixed bug #017163: unwanted &amp;nbsp; in enabling/disabling editor
   (merged from trunk rev. 284)
+- Merge TinyMCE 3.3.9 and all related changes from ezoe 5.2 (trunk) to fix several issues
 
 
 5.1.0
