@@ -83,11 +83,11 @@
             {set $custom_attribute_title = first_set( $attribute_titles[$xml_attribute], '' )}
         {/if}
 
-                {if ezini_hasvariable( $custom_attribute_settings, 'Required', 'ezoe_attributes.ini' )}
-                    {if ezini( $custom_attribute_settings, 'Required', 'ezoe_attributes.ini' )|eq('true')}
-                        {set $custom_attribute_classes = $custom_attribute_classes|append( 'required' )}
-                    {/if}
-                {/if}
+		{if ezini_hasvariable( $custom_attribute_settings, 'Required', 'ezoe_attributes.ini' )}
+		    {if ezini( $custom_attribute_settings, 'Required', 'ezoe_attributes.ini' )|eq('true')}
+		        {set $custom_attribute_classes = $custom_attribute_classes|append( 'required' )}
+		    {/if}
+		{/if}
 
         {if ezini_hasvariable( $custom_attribute_settings, 'AllowEmpty', 'ezoe_attributes.ini' )}
             {if ezini( $custom_attribute_settings, 'AllowEmpty', 'ezoe_attributes.ini' )|eq('true')}

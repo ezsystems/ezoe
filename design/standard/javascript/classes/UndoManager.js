@@ -1,185 +1,163 @@
 /**
- * $Id: UndoManager.js 1190 2009-08-12 17:59:29Z spocke $
+ * UndoManager.js
  *
- * @author Moxiecode
- * @copyright Copyright � 2004-2008, Moxiecode Systems AB, All rights reserved.
+ * Copyright 2009, Moxiecode Systems AB
+ * Released under LGPL License.
+ *
+ * License: http://tinymce.moxiecode.com/license
+ * Contributing: http://tinymce.moxiecode.com/contributing
  */
 
 (function(tinymce) {
-        /**
-         * This class handles the undo/redo history levels for the editor. Since the build in undo/redo has major drawbacks a custom one was needed.
-         * @class tinymce.UndoManager
-         */
-        tinymce.create('tinymce.UndoManager', {
-                index : 0,
-                data : null,
-                typing : 0,
+	var Dispatcher = tinymce.util.Dispatcher;
 
-                /**
-                 * Constructs a new UndoManager instance.
-                 *
-                 * @constructor
-                 * @method UndoManager
-                 * @param {tinymce.Editor} ed Editor instance to undo/redo in.
-                 */
-                UndoManager : function(ed) {
-                        var t = this, Dispatcher = tinymce.util.Dispatcher;
+	/**
+	 * This class handles the undo/redo history levels for the editor. Since the build in undo/redo has major drawbacks a custom one was needed.
+	 *
+	 * @class tinymce.UndoManager
+	 */
+	tinymce.UndoManager = function(editor) {
+		var self, index = 0, data = [];
 
-                        t.editor = ed;
-                        t.data = [];
-                        t.onAdd = new Dispatcher(this);
-                        t.onUndo = new Dispatcher(this);
-                        t.onRedo = new Dispatcher(this);
-                },
+		function getContent() {
+			return tinymce.trim(editor.getContent({format : 'raw', no_events : 1}));
+		};
 
-                /**
-                 * Adds a new undo level/snapshot to the undo list.
-                 *
-                 * @method add
-                 * @param {Object} l Optional undo level object to add.
-                 * @return {Object} Undo level that got added or null it a level wasn't needed.
-                 */
-                add : function(l) {
-                        var t = this, i, ed = t.editor, b, s = ed.settings, la;
+		return self = {
+			typing : 0,
 
-                        l = l || {};
-                        l.content = l.content || ed.getContent({format : 'raw', no_events : 1});
+			onAdd : new Dispatcher(self),
+			onUndo : new Dispatcher(self),
+			onRedo : new Dispatcher(self),
 
-                        // Add undo level if needed
-                        l.content = l.content.replace(/^\s*|\s*$/g, '');
-                        la = t.data[t.index > 0 && (t.index == 0 || t.index == t.data.length) ? t.index - 1 : t.index];
-                        if (!l.initial && la && l.content == la.content)
-                                return null;
+			/**
+			 * Adds a new undo level/snapshot to the undo list.
+			 *
+			 * @method add
+			 * @param {Object} l Optional undo level object to add.
+			 * @return {Object} Undo level that got added or null it a level wasn't needed.
+			 */
+			add : function(level) {
+				var i, settings = editor.settings, lastLevel;
 
-                        // Time to compress
-                        if (s.custom_undo_redo_levels) {
-                                if (t.data.length > s.custom_undo_redo_levels) {
-                                        for (i = 0; i < t.data.length - 1; i++)
-                                                t.data[i] = t.data[i + 1];
+				level = level || {};
+				level.content = getContent();
 
-                                        t.data.length--;
-                                        t.index = t.data.length;
-                                }
-                        }
+				// Add undo level if needed
+				lastLevel = data[index];
+				if (lastLevel && lastLevel.content == level.content) {
+					if (index > 0 || data.length == 1)
+						return null;
+				}
 
-                        if (s.custom_undo_redo_restore_selection && !l.initial)
-                                l.bookmark = b = l.bookmark || ed.selection.getBookmark();
+				// Time to compress
+				if (settings.custom_undo_redo_levels) {
+					if (data.length > settings.custom_undo_redo_levels) {
+						for (i = 0; i < data.length - 1; i++)
+							data[i] = data[i + 1];
 
-                        if (t.index < t.data.length)
-                                t.index++;
+						data.length--;
+						index = data.length;
+					}
+				}
 
-                        // Only initial marked undo levels should be allowed as first item
-                        // This to workaround a bug with Firefox and the blur event
-                        if (t.data.length === 0 && !l.initial)
-                                return null;
+				// Get a non intrusive normalized bookmark
+				level.bookmark = editor.selection.getBookmark(2, true);
 
-                        // Add level
-                        t.data.length = t.index + 1;
-                        t.data[t.index++] = l;
+				// Crop array if needed
+				if (index < data.length - 1) {
+					// Treat first level as initial
+					if (index == 0)
+						data = [];
+					else
+						data.length = index + 1;
+				}
 
-                        if (l.initial)
-                                t.index = 0;
+				data.push(level);
+				index = data.length - 1;
 
-                        // Set initial bookmark use first real undo level
-                        if (t.data.length == 2 && t.data[0].initial)
-                                t.data[0].bookmark = b;
+				self.onAdd.dispatch(self, level);
+				editor.isNotDirty = 0;
 
-                        t.onAdd.dispatch(t, l);
-                        ed.isNotDirty = 0;
+				return level;
+			},
 
-                        //console.dir(t.data);
+			/**
+			 * Undoes the last action.
+			 *
+			 * @method undo
+			 * @return {Object} Undo level or null if no undo was performed.
+			 */
+			undo : function() {
+				var level, i;
 
-                        return l;
-                },
+				if (self.typing) {
+					self.add();
+					self.typing = 0;
+				}
 
-                /**
-                 * Undoes the last action.
-                 *
-                 * @method undo
-                 * @return {Object} Undo level or null if no undo was performed.
-                 */
-                undo : function() {
-                        var t = this, ed = t.editor, l = l, i;
+				if (index > 0) {
+					level = data[--index];
 
-                        if (t.typing) {
-                                t.add();
-                                t.typing = 0;
-                        }
+					editor.setContent(level.content, {format : 'raw'});
+					editor.selection.moveToBookmark(level.bookmark);
 
-                        if (t.index > 0) {
-                                // If undo on last index then take snapshot
-                                if (t.index == t.data.length && t.index > 1) {
-                                        i = t.index;
-                                        t.typing = 0;
+					self.onUndo.dispatch(self, level);
+				}
 
-                                        if (!t.add())
-                                                t.index = i;
+				return level;
+			},
 
-                                        --t.index;
-                                }
+			/**
+			 * Redoes the last action.
+			 *
+			 * @method redo
+			 * @return {Object} Redo level or null if no redo was performed.
+			 */
+			redo : function() {
+				var level;
 
-                                l = t.data[--t.index];
-                                ed.setContent(l.content, {format : 'raw'});
-                                ed.selection.moveToBookmark(l.bookmark);
+				if (index < data.length - 1) {
+					level = data[++index];
 
-                                t.onUndo.dispatch(t, l);
-                        }
+					editor.setContent(level.content, {format : 'raw'});
+					editor.selection.moveToBookmark(level.bookmark);
 
-                        return l;
-                },
+					self.onRedo.dispatch(self, level);
+				}
 
-                /**
-                 * Redoes the last action.
-                 *
-                 * @method redo
-                 * @return {Object} Redo level or null if no redo was performed.
-                 */
-                redo : function() {
-                        var t = this, ed = t.editor, l = null;
+				return level;
+			},
 
-                        if (t.index < t.data.length - 1) {
-                                l = t.data[++t.index];
-                                ed.setContent(l.content, {format : 'raw'});
-                                ed.selection.moveToBookmark(l.bookmark);
+			/**
+			 * Removes all undo levels.
+			 *
+			 * @method clear
+			 */
+			clear : function() {
+				data = [];
+				index = self.typing = 0;
+			},
 
-                                t.onRedo.dispatch(t, l);
-                        }
+			/**
+			 * Returns true/false if the undo manager has any undo levels.
+			 *
+			 * @method hasUndo
+			 * @return {Boolean} true/false if the undo manager has any undo levels.
+			 */
+			hasUndo : function() {
+				return index > 0 || self.typing;
+			},
 
-                        return l;
-                },
-
-                /**
-                 * Removes all undo levels.
-                 *
-                 * @method clear
-                 */
-                clear : function() {
-                        var t = this;
-
-                        t.data = [];
-                        t.index = 0;
-                        t.typing = 0;
-                        t.add({initial : true});
-                },
-
-                /**
-                 * Returns true/false if the undo manager has any undo levels.
-                 *
-                 * @method hasUndo
-                 * @return {Boolean} true/false if the undo manager has any undo levels.
-                 */
-                hasUndo : function() {
-                        return this.index != 0 || this.typing;
-                },
-
-                /**
-                 * Returns true/false if the undo manager has any redo levels.
-                 *
-                 * @method hasRedo
-                 * @return {Boolean} true/false if the undo manager has any redo levels.
-                 */
-                hasRedo : function() {
-                        return this.index < this.data.length - 1;
-                }
-        });
+			/**
+			 * Returns true/false if the undo manager has any redo levels.
+			 *
+			 * @method hasRedo
+			 * @return {Boolean} true/false if the undo manager has any redo levels.
+			 */
+			hasRedo : function() {
+				return index < data.length - 1;
+			}
+		};
+	};
 })(tinymce);

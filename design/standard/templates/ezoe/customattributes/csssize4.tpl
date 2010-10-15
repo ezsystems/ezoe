@@ -15,10 +15,10 @@
 <table class="csssize4_input_layout" border="0" cellpadding="0" cellspacing="1" summary="Size inputs for all 4 edges">
 <thead>
 <tr>
-        <td align="center"><label for="{$custom_attribute_id}_source">{'Top'|i18n('design/standard/ezoe')}</label></td>
-        <td align="center"><label for="{$custom_attribute_id}_source_1">{'Right'|i18n('design/standard/ezoe')}</label></td>
-        <td align="center"><label for="{$custom_attribute_id}_source_2">{'Bottom'|i18n('design/standard/ezoe')}</label></td>
-        <td align="center"><label for="{$custom_attribute_id}_source_3">{'Left'|i18n('design/standard/ezoe')}</label></td>
+	<td align="center"><label for="{$custom_attribute_id}_source">{'Top'|i18n('design/standard/ezoe')}</label></td>
+	<td align="center"><label for="{$custom_attribute_id}_source_1">{'Right'|i18n('design/standard/ezoe')}</label></td>
+	<td align="center"><label for="{$custom_attribute_id}_source_2">{'Bottom'|i18n('design/standard/ezoe')}</label></td>
+	<td align="center"><label for="{$custom_attribute_id}_source_3">{'Left'|i18n('design/standard/ezoe')}</label></td>
 </tr>
 </thead>
 <tbody>

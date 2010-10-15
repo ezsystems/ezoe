@@ -1,8 +1,11 @@
 /**
- * $Id: Separator.js 1176 2009-08-04 09:42:14Z spocke $
+ * Separator.js
  *
- * @author Moxiecode
- * @copyright Copyright � 2004-2008, Moxiecode Systems AB, All rights reserved.
+ * Copyright 2009, Moxiecode Systems AB
+ * Released under LGPL License.
+ *
+ * License: http://tinymce.moxiecode.com/license
+ * Contributing: http://tinymce.moxiecode.com/contributing
  */
 
 /**
@@ -12,27 +15,27 @@
  * @extends tinymce.ui.Control
  */
 tinymce.create('tinymce.ui.Separator:tinymce.ui.Control', {
-        /**
-         * Separator constructor.
-         *
-         * @constructor
-         * @method Separator
-         * @param {String} id Control id to use for the Separator.
-         * @param {Object} s Optional name/value settings object.
-         */
-        Separator : function(id, s) {
-                this.parent(id, s);
-                this.classPrefix = 'mceSeparator';
-        },
+	/**
+	 * Separator constructor.
+	 *
+	 * @constructor
+	 * @method Separator
+	 * @param {String} id Control id to use for the Separator.
+	 * @param {Object} s Optional name/value settings object.
+	 */
+	Separator : function(id, s) {
+		this.parent(id, s);
+		this.classPrefix = 'mceSeparator';
+	},
 
-        /**
-         * Renders the separator as a HTML string. This method is much faster than using the DOM and when
-         * creating a whole toolbar with buttons it does make a lot of difference.
-         *
-         * @method renderHTML
-         * @return {String} HTML for the separator control element.
-         */
-        renderHTML : function() {
-                return tinymce.DOM.createHTML('span', {'class' : this.classPrefix});
-        }
+	/**
+	 * Renders the separator as a HTML string. This method is much faster than using the DOM and when
+	 * creating a whole toolbar with buttons it does make a lot of difference.
+	 *
+	 * @method renderHTML
+	 * @return {String} HTML for the separator control element.
+	 */
+	renderHTML : function() {
+		return tinymce.DOM.createHTML('span', {'class' : this.classPrefix});
+	}
 });

@@ -7,12 +7,12 @@
 {/if}
 {if $custom_attribute_default|ne('')}
     {set $custom_attribute_default = $custom_attribute_default|append(' solid #000000')|explode(' ')}
-        {def $custom_attribute_default_int = $custom_attribute_default.0|int
-             $custom_attribute_default_type = $custom_attribute_default|explode( $custom_attribute_default_int ).1}
+	{def $custom_attribute_default_int = $custom_attribute_default.0|int
+	     $custom_attribute_default_type = $custom_attribute_default|explode( $custom_attribute_default_int ).1}
 {else}
     {set $custom_attribute_default = array('','','')}
-        {def $custom_attribute_default_int = ''
-             $custom_attribute_default_type = ''}
+	{def $custom_attribute_default_int = ''
+	     $custom_attribute_default_type = ''}
 {/if}
 <table cellspacing="1" cellpadding="0" border="0">
 <tr>

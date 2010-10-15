@@ -4,7 +4,7 @@
 //
 // ## BEGIN COPYRIGHT, LICENSE AND WARRANTY NOTICE ##
 // SOFTWARE NAME: eZ Online Editor extension for eZ Publish
-// SOFTWARE RELEASE: 4.3.0
+// SOFTWARE RELEASE: 5.1.1
 // COPYRIGHT NOTICE: Copyright (C) 1999-2010 eZ Systems AS
 // SOFTWARE LICENSE: GNU General Public License v2.0
 // NOTICE: >
@@ -221,19 +221,27 @@ foreach ( $relatedObjects as $relatedObjectKey => $relatedObject )
     
     if ( $groupName === 'images' )
     {
-        $contentObjectAttributes = $relatedObject->contentObjectAttributes();
-        
-        foreach ( $contentObjectAttributes as $contentObjectAttribute )
+        $objectAttributes = $relatedObject->contentObjectAttributes();
+        foreach ( $objectAttributes as $objectAttribute )
         {
-            $classAttribute = $contentObjectAttribute->contentClassAttribute();
-            if ( in_array ( $classAttribute->attribute( 'data_type_string' ), $imageDatatypeArray ) )
+            $classAttribute = $objectAttribute->contentClassAttribute();
+            $dataTypeString = $classAttribute->attribute( 'data_type_string' );
+            if ( in_array ( $dataTypeString, $imageDatatypeArray ) && $objectAttribute->hasContent() )
             {
-                $content = $contentObjectAttribute->content();
-                if ( $content != null )
+                $content = $objectAttribute->content();
+                if ( $content == null )
+                    continue;
+
+                if ( $content->hasAttribute( 'small' ) )
                 {
                     $srcString = $content->imageAlias( 'small' );
                     $imageAttribute = $classAttribute->attribute('identifier');
                     break;
+                }
+                else
+                {
+                    eZDebug::writeError( "Image alias does not exist: small, missing from image.ini?",
+                        __METHOD__ );
                 }
             }
         }

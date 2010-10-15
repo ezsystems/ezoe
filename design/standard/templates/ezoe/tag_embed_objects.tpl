@@ -21,7 +21,7 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
     tagName: 'embed',
     form: 'EditForm',
     cancelButton: 'CancelButton',
-    cssClass: compatibilityMode !== 'enabled' ? 'mceNonEditable mceItemContentTypeObjects' : '',
+    cssClass: compatibilityMode !== 'enabled' ? 'ezoeItemNonEditable ezoeItemContentTypeObjects' : '',
     onInitDone: function( el, tag, ed )
     {        
         var selectors = ez.$('embed_size_source', 'embed_align_source', 'embed_class_source', 'embed_view_source', 'embed_inline_source');
@@ -46,7 +46,7 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
     tagGenerator: function( tag, customTag )
     {
         if ( contentType === 'images' || compatibilityMode === 'enabled' )
-            return '<img id="__mce_tmp" src="javascript:void(0);" />';
+            return '<img id="__mce_tmp" src="JavaScript:void(0);" />';
         if ( jQuery('#embed_inline_source').attr( 'checked' ) )
            return '<span id="__mce_tmp"></span>';
         return '<div id="__mce_tmp"></div>';
@@ -67,7 +67,7 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
         && edBody.childNodes.length <= (jQuery.inArray( el, edBody.childNodes ) +1) )
         {
             var p = doc.createElement('p');
-            p.innerHTML = ed.isIE ? '&nbsp;' : '<br />';
+            p.innerHTML = ed.isIE ? '&nbsp;' : '<br \/>';
             edBody.appendChild( p );
         }
     },
@@ -87,6 +87,7 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
         }
         args['title']   = eZOEPopupUtils.safeHtml( eZOEPopupUtils.embedObject['name'] );
         ed.dom.setAttribs( el, args );
+        return el;
     }
 }));
 
@@ -110,7 +111,7 @@ function inlineSelectorChange( e, el )
     if ( editorEl )
     {
         var viewValue = editorEl.getAttribute('view');
-        var classValue = jQuery.trim( editorEl.className.replace(/(webkit-[\w\-]+|Apple-[\w\-]+|mceItem\w+|mceVisualAid|mceNonEditable)/g, '') );
+        var classValue = jQuery.trim( editorEl.className.replace(/(webkit-[\w\-]+|Apple-[\w\-]+|mceItem\w+|ezoeItem\w+|mceVisualAid)/g, '') );
     }
 
     if ( viewValue && viewListData[ tag ].join !== undefined && (' ' + viewListData[ tag ].join(' ') + ' ').indexOf( ' ' + viewValue + ' ' ) !== -1 )
@@ -141,7 +142,7 @@ function loadEmbedPreview( )
     var postData = jQuery('#embed_attributes input, #embed_attributes select').serialize();
     eZOEPopupUtils.ajax.load( url, postData, function( r )
     {
-        jQuery('#embed_preview').html( r.responseText );
+    	jQuery('#embed_preview').html( r.responseText );
     });
 }
 

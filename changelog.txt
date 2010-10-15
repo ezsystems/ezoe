@@ -1,4 +1,28 @@
-eZ Online Editor 5.0 extension Changelog
+eZ Online Editor 5.x extension Changelog
+
+5.1.1
+- Fixed bug #16554: Applying table cell settings to row or column does not affect table headings
+- Fixed bug #16605: Online Editor adds a lot of Non Breaking spaces (nbsp)
+  (merged from trunk rev. 206)
+- Fixed bug #16271: Links containing special characters are not stored correctly
+- Fixed bug #016725: Check hasContent on image object attribute before it is used
+  (merged from trunk rev. 226 & 229)
+- Fixed bug #016952: IE6 OE 5.0.2 fullscreen mode has no button box
+  (merged from trunk rev. 250)
+- Fixed bug #016888: IE only : Custom tag do not save when first thing inserted in OE
+  (merged from trunk rev. 267)
+- Fixed bug #016842: in IE 8, have to edit attribute before entering literal tag
+  (merged from trunk rev. 267)
+- Fixed bug #016595: Issues with page break and embed objects
+  (merged from trunk rev. 277)
+- Fixed bug #015513: Custom attributes: checkbox problems
+  (merged from trunk rev. 280)
+- Fixed bug #017182: Underline is stripped away when saving after changing it with dialogs
+  (merged from trunk rev. 282)
+- Fixed bug #017163: unwanted &amp;nbsp; in enabling/disabling editor
+  (merged from trunk rev. 284)
+- Merge TinyMCE 3.3.9 and all related changes from ezoe 5.2 (trunk) to fix several issues
+
 
 5.1.0
 * Fixed bug #16469: embedding objects in another language causes serious problems in following not-translateable attributes
@@ -9,11 +33,9 @@ eZ Online Editor 5.0 extension Changelog
 5.1.0beta2:
 * Fixed #16271: Links containing special characters are not stored correctly
 
-
 5.1.0beta1:
 * Fixed #15872: suggestions of spell checker have the wrong encoding
 * Added ezoe.ini setting for setting directionality
-
 
 5.1.0alpha1:
 * Fixed translation of anchor Name attribute

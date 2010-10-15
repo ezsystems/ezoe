@@ -151,14 +151,14 @@ if (!("console" in window) || !("firebug" in console)) {
     var consoleBody = null;
     var commandLine = null;
  
-        if (window.attachEvent) {
-                function fixLeaks() {
-                        consoleFrame = consoleBody = commandLine = null;
-                        window.detachEvent('onunload', fixLeaks);
-                };
+	if (window.attachEvent) {
+		function fixLeaks() {
+			consoleFrame = consoleBody = commandLine = null;
+			window.detachEvent('onunload', fixLeaks);
+		};
 
-                window.attachEvent('onunload', fixLeaks);
-        }
+		window.attachEvent('onunload', fixLeaks);
+	}
 
     var frameVisible = false;
     var messageQueue = [];

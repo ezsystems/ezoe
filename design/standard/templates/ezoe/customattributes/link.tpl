@@ -39,17 +39,17 @@ eZOEPopupUtils.settings.onInitDoneArray.push( function( editorElement )
         var lid = ezoeLinkAttribute.id, input = document.getElementById( lid+'_source' );
         if ( this.value === 'ezobject://' )
         {
-                input.value = this.value + ezoeLinkAttribute.node['contentobject_id'];
+        	input.value = this.value + ezoeLinkAttribute.node['contentobject_id'];
             ezoeLinkAttribute.namePreview( ezoeLinkAttribute.node['name'] );
         }
         else if ( this.value === 'eznode://' )
         {
-                input.value = this.value + ezoeLinkAttribute.node['node_id'];
+        	input.value = this.value + ezoeLinkAttribute.node['node_id'];
             ezoeLinkAttribute.namePreview( ezoeLinkAttribute.node['name'] );
         }
         else
         {
-                input.value = this.value;
+        	input.value = this.value;
             ezoeLinkAttribute.namePreview( undefined );
         }
     });
@@ -117,7 +117,7 @@ eZOEPopupUtils.selectByEmbedId = function( object_id, node_id, name )
     if ( drop.val() === 'ezobject://' )
         inp.val( 'ezobject://' + object_id );
     else
-        inp.val( 'eznode://' + node_id );
+    	inp.val( 'eznode://' + node_id );
     ezoeLinkAttribute.typeSet( inp, drop );
     ezoeLinkAttribute.namePreview( name, info );
     ezoeLinkAttribute.slides.accordionGoto.call( ezoeLinkAttribute.slides, 0 );
