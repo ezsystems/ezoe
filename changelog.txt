@@ -3,6 +3,8 @@ eZ Online Editor 5.x extension Changelog
 5.2.1
 - Fix #017402: ezoe offset passed to ezoe browse as string not integer
   (merge from trunk rev. 318)
+- Fixed bug #017621: Popup browse mode navigator fails due to numbers typed as strings (patch)
+  (Merged from master (5.3.0) commit e505d50)
 
 5.2.0beta3
 - Updated TinyMCE to 3.3.9
