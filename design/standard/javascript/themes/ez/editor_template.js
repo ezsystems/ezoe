@@ -1156,7 +1156,7 @@
             {
                 if ( c = cm.get('anchor') )
                 {
-                    c.setActive( !!p && DOM.getAttrib(p, 'id') && !DOM.getAttrib(p, 'href') );
+                    c.setActive( !!p && DOM.getAttrib(p, 'name') && !DOM.getAttrib(p, 'href') );
                 }
                 
                 p = header ? header : getParent('DIV');
@@ -1247,7 +1247,7 @@
                         case 'link':
                             if (v = DOM.getAttrib(n, 'href'))
                                 ti += 'href: ' + v + ' ';
-                            else if (v = DOM.getAttrib(n, 'id'))
+                            else if (v = DOM.getAttrib(n, 'name'))
                                 naa += '#' + v;
                             break;
                         case 'custom':
