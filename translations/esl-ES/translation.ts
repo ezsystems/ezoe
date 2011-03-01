@@ -1034,99 +1034,99 @@ Do you want more information about this issue?</source>
     </message>
     <message>
         <source>Run spell checking</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Iniciar el corrector ortográfico</translation>
     </message>
     <message>
         <source>ieSpell not detected. Do you want to install it now?</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ieSpell no ha sido detectado. ¿Quieres instalarlo ahora?</translation>
     </message>
     <message>
         <source>Horizontale rule</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Línea horizontal</translation>
     </message>
     <message>
         <source>Emotions</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Emoticonos</translation>
     </message>
     <message>
         <source>Insert emotion</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Insertar emoticón</translation>
     </message>
     <message>
         <source>Cool</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mola</translation>
     </message>
     <message>
         <source>Cry</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Llanto</translation>
     </message>
     <message>
         <source>Embarassed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Avergonzado</translation>
     </message>
     <message>
         <source>Foot in mouth</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cremallera en boca</translation>
     </message>
     <message>
         <source>Frown</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fruncir el ceño</translation>
     </message>
     <message>
         <source>Innocent</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Inocente</translation>
     </message>
     <message>
         <source>Kiss</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Beso</translation>
     </message>
     <message>
         <source>Laughing</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Risas</translation>
     </message>
     <message>
         <source>Money mouth</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Dinero por la boca</translation>
     </message>
     <message>
         <source>Sealed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sellado</translation>
     </message>
     <message>
         <source>Smile</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sonrisa</translation>
     </message>
     <message>
         <source>Surprised</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sorprendido</translation>
     </message>
     <message>
         <source>Tongue out</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sacar la lengua</translation>
     </message>
     <message>
         <source>Undecided</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Indeciso</translation>
     </message>
     <message>
         <source>Wink</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Guiño</translation>
     </message>
     <message>
         <source>Yell</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Grito</translation>
     </message>
     <message>
         <source>Paste is now in plain text mode. Click again to toggle back to regular paste mode. After you paste something you will be returned to regular paste mode.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Pegar está actualmente en modo texto pleno. Haz click otra vez para volver al modo normal. Después de pegar algo, serás devuelto al modo normal.</translation>
     </message>
     <message>
         <source>Paste is now in plain text mode. Click again to toggle back to regular paste mode.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Pegar está actualmente en modo texto pleno. Haz click otra vez para volver al modo normal.</translation>
     </message>
     <message>
         <source>Insert horizontal ruler</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Insertar separador horizontal</translation>
     </message>
 </context>
 <context>
