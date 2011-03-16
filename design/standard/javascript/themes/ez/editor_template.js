@@ -1611,7 +1611,10 @@
         {
             var ed = this.editor, n = ed.selection.getNode();
             if ( n.nodeName === 'P' && n.parentNode.nodeName === 'BODY' )
-                ed.execCommand('mceInsertRawHTML', false, '</p><div type="custom" class="mceItemCustomTag pagebreak"><p>pagebreak</p></div><p>');
+            {
+                // extra paragraph required after the div to be able to write content after it
+                ed.execCommand('mceInsertRawHTML', false, '</p><div type="custom" class="ezoeItemCustomTag pagebreak"><p>pagebreak</p></div><p>' + (tinymce.isIE ? '&nbsp;' : '<br _mce_bogus="1" />') + '</p><p>');
+            }
             else if ( n.nodeName === 'BODY' )
                 ed.execCommand ('mceInsertRawHTML', false, '<div type="custom" class="mceItemCustomTag pagebreak"><p>pagebreak</p></div>');
             else
