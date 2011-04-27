@@ -153,6 +153,16 @@
                 else if (ed.settings.content_css !== false)
                     ed.dom.loadCSS(ed.baseURI.toAbsolute(url + "/skins/" + ed.settings.skin + "/content.css"));
 
+                // eZ : underline is represented with a custom tag
+                // ie: <span class="ezoeItemCustomTag underline" type="custom">foo bar</span>
+                ed.formatter.register({
+                    underline : {inline : 'span',
+                                 classes : 'ezoeItemCustomTag underline',
+                                 attributes : {'type': 'custom'},
+                                 exact: true,
+                                 remove: 'all'}
+                });
+
                 // Add support for align attribute (until parser and theme supports style based alignment)
                 // taken from legacyoutput plugin
                 var alignElements = 'p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li,table,img', serializer = ed.serializer;
