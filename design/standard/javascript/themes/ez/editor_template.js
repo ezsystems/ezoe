@@ -1093,7 +1093,7 @@
             }
 
             // table button code
-            p = getParent('TD,TH,CAPTION');
+            p = getParent('TD,TH,CAPTION,TR');
             if (p && p.nodeName === 'CAPTION') p = null;
             cm.setDisabled('table', header );
             cm.setDisabled('tablemenu', header );
