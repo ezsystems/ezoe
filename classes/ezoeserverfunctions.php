@@ -544,6 +544,302 @@ class ezoeServerFunctions extends ezjscServerFunctions
         }
         return $mtime;
     }
+
+
+    /**
+     * Returns global TinyMCE initialization JS code
+     * @param array $args array( attribute_id, version )
+     * @return string
+     */
+    public static function tinyMCEGlobalInit( $args )
+    {
+        //dummy template to use with eZURLOperator::eZDesign()
+        $tpl = eZTemplate::factory();
+
+        //Fetch object attribute from arguments
+        $attribute = self::getAttributeFromArgs( $args );
+
+        if( !$attribute || $attribute->attribute( 'data_type_string' ) !== 'ezxmltext' )
+        {
+            return '';
+        }
+
+        $attribute_id = $attribute->attribute( 'id' );
+        $attribute_contentobject_id = $attribute->attribute( 'contentobject_id' );
+        $attribute_version = $attribute->attribute( 'version' );
+
+        // Input Handler Params
+        $input_handler=$attribute->attribute('content')->attribute('input');
+        $json_xml_tag_alias = $input_handler->attribute( 'json_xml_tag_alias' );
+
+
+        //INI related settings
+        $siteINI = eZINI::instance();
+        $ezoeINI = eZINI::instance( 'ezoe.ini', '', null, false );
+        $designINI = eZINI::instance( 'design.ini' );
+
+        $ez_locale = $siteINI->variable( 'RegionalSettings', 'Locale' );
+        $language = '-' . $ez_locale;
+
+        $skin = $ezoeINI->variable( 'EditorSettings', 'Skin' );
+        if( $ezoeINI->hasVariable( 'EditorSettings', 'SkinVariant' ) )
+        {
+            $skin_variant = $ezoeINI->variable( 'EditorSettings', 'SkinVariant' );
+        }
+        else
+        {
+            $skin_variant = '';
+        }
+
+
+        $plugin_list = '-' . implode( ',-', $ezoeINI->variable( 'EditorSettings', 'Plugins' ) );
+
+        $directionality    = 'ltr';
+        if ( $ezoeINI->hasVariable( 'EditorSettings', 'Directionality' ) )
+        {
+            $directionality = $ezoeINI->variable( 'EditorSettings', 'Directionality' );
+        }
+
+        $toolbar_alignment = 'left';
+        if ( $ezoeINI->hasVariable( 'EditorSettings', 'ToolbarAlign' ) )
+        {
+            $toolbar_alignment = $ezoeINI->variable( 'EditorSettings', 'ToolbarAlign' );
+        }
+
+        if( $ezoeINI->variable( 'EditorSettings', 'TagPathOpenDialog' ) === 'enabled' )
+        {
+            $tag_path_open_dialog = 'true';
+        }
+        else
+        {
+            $tag_path_open_dialog = 'false';
+        }
+
+
+        //Editor CSS Files
+        $editor_css_list = array( 'skins/' . $skin . '/ui.css' );
+        if( $skin_variant )
+        {
+            $editor_css_list[] = 'skins/' . $skin . '/ui_' . $skin_variant . '.css';
+        }
+        $editor_css_list_string = implode( ',', ezjscPacker::buildStylesheetFiles( $editor_css_list, 3 ) );
+
+
+        //Content CSS Files
+        $content_css_list = array();
+        $content_css_list_temp = $designINI->variable( 'StylesheetSettings', 'EditorCSSFileList' );
+        foreach( $content_css_list_temp as $css )
+        {
+            $content_css_list[] = implode( $skin, explode( '<skin>', $css ) );
+        }
+        $content_css_list_string = implode( ',', ezjscPacker::buildStylesheetFiles( $content_css_list, 3 ) );
+
+        //URLS
+        $popup_css = eZURLOperator::eZDesign( $tpl, "stylesheets/skins/" . $skin . "/dialog.css", 'ezdesign' );
+        $popup_css_add = eZURLOperator::eZDesign( $tpl, "stylesheets/core.css", 'ezdesign' );
+
+        $ez_root_url = '/';
+        eZURI::transformURI( $ez_root_url );
+
+        $ezoe_url = '/ezoe/';
+        eZURI::transformURI( $ezoe_url );
+
+        $ez_js_url = '/extension/ezoe/design/standard/javascript/';
+        eZURI::transformURI( $ez_js_url );
+
+        $tiny_mce_url = eZURLOperator::eZDesign( $tpl, 'javascript/tiny_mce.js', 'ezdesign' );
+
+        //Spell Check config
+        $spell_check_rpc_url = '/ezoe/spellcheck_rpc';
+        eZURI::transformURI( $spell_check_rpc_url );
+
+        $spell_languages = '+English=en';
+        if ( $attribute->attribute( 'language_code' ) === $ez_locale )
+        {
+            $cur_locale = eZLocale::instance();
+            $langCodes = explode( '-', $cur_locale->attribute( 'http_locale_code' ) );
+            $spell_languages = '+' . $cur_locale->attribute( 'intl_language_name' ) . '=' . $langCodes[0];
+        }
+        else
+        {
+            $atr_locale = eZLocale::fetchByHttpLocaleCode( $attribute->attribute( 'language_code' ) );
+            $langCodes = explode( '-', $atr_locale->attribute( 'http_locale_code' ) );
+            $spell_languages = '+' . $atr_locale->attribute( 'intl_language_name' ) . '=' . $langCodes[0];
+
+            $cur_locale = eZLocale::instance();
+            $langCodes = explode( '-', $cur_locale->attribute( 'http_locale_code' ) );
+            $spell_languages .= ',' . $cur_locale->attribute( 'intl_language_name' ) . '=' . $langCodes[0];
+        }
+
+        $atd_rpc_url = '/ezoe/atd_rpc?url=';
+        eZURI::transformURI( $atd_rpc_url );
+
+        $atd_css_url = eZURLOperator::eZDesign( $tpl, 'javascript/plugins/AtD/css/content.css', 'ezdesign' );
+
+
+        $js = <<<EOT
+            var eZOeAttributeSettings, eZOeGlobalSettings = {
+                mode : "none",
+                theme : "ez",
+                width : '100%',
+                language : '{$language}',
+                skin : '{$skin}',
+                skin_variant : '{$skin_variant}',
+                plugins : "{$plugin_list}",
+                directionality : '{$directionality}',
+                theme_advanced_buttons2 : "",
+                theme_advanced_buttons3 : "",
+                theme_advanced_blockformats : "p,pre,h1,h2,h3,h4,h5,h6",// removes address tag, not suppored by ezxml
+                theme_advanced_path_location : false,// ignore, use theme_advanced_statusbar_location
+                theme_advanced_statusbar_location : "bottom",// correct value set by layout code bellow pr attribute
+                theme_advanced_toolbar_location : "top",// correct value set by layout code bellow pr attribute
+                theme_advanced_toolbar_align : "{$toolbar_alignment}",
+                theme_advanced_toolbar_floating : true,
+                theme_advanced_resize_horizontal : false,
+                theme_advanced_resizing : true,
+                valid_elements : "-strong/-b/-bold[class|customattributes],-em/-i/-emphasize[class|customattributes],span[id|type|class|title|customattributes|align|style|view|inline|alt],sub[class|type|customattributes|align],sup[class|type|customattributes|align],u[class|type|customattributes|align],pre[class|title|customattributes],ol[class|customattributes],ul[class|customattributes],li[class|customattributes],a[href|name|target|view|title|class|id|customattributes],p[class|customattributes|align|style],img[id|type|class|title|customattributes|align|style|view|inline|alt|src],table[class|border|width|id|title|customattributes|ezborder|bordercolor|align|style],tr,th[class|width|rowspan|colspan|customattributes|align|style],td[class|width|rowspan|colspan|customattributes|align|style],div[id|type|class|title|customattributes|align|style|view|inline|alt],h1[class|customattributes|align|style],h2[class|customattributes|align|style],h3[class|customattributes|align|style],h4[class|customattributes|align|style],h5[class|customattributes|align|style],h6[class|customattributes|align|style],br",
+                valid_child_elements : "a[%itrans_na],table[tr],tr[td|th],ol/ul[li],h1/h2/h3/h4/h5/h6/pre/strong/b/p/em/i/u/span/sub/sup/li[%itrans|#text]div/pre/td/th[%btrans|%itrans|#text]",
+                // cleanup : false,
+                // cleanup_serializer : 'xml',
+                // entity_encoding : 'raw',
+                entities : '160,nbsp', // We need to transform nonbreaking white space to encoded form, all other charthers as stored in raw unicode form.
+                // remove_linebreaks : false,
+                // apply_source_formatting : false,
+                fix_list_elements : true,
+                fix_table_elements : true,
+                convert_urls : false,
+                inline_styles : false,
+                tab_focus : ':prev,:next',
+                theme_ez_xml_alias_list : {$json_xml_tag_alias},
+                theme_ez_editor_css : '{$editor_css_list_string}',
+                theme_ez_content_css : '{$content_css_list_string}',
+                theme_ez_statusbar_open_dialog : {$tag_path_open_dialog},
+                popup_css : "{$popup_css}",
+                //popup_css_add : "{$popup_css_add}",
+                gecko_spellcheck : true,
+                object_resizing : false,//disable firefox inline image/table resizing
+                table_inline_editing : true, // table edit controlls in gecko
+                save_enablewhendirty : true,
+                ez_root_url : "{$ez_root_url}",
+                ez_extension_url : "{$ezoe_url}",
+                ez_js_url : "{$ez_js_url}",
+                /* Used by language pack / plugin url fixer bellow, do not change */
+                ez_tinymce_url : "{$tiny_mce_url}",
+                ez_contentobject_id : {$attribute_contentobject_id},
+                ez_contentobject_version : {$attribute_version},
+                spellchecker_rpc_url : "{$spell_check_rpc_url}",
+                spellchecker_languages : '{$spell_languages}',
+                atd_rpc_url : "{$atd_rpc_url}",
+                atd_rpc_id  : "your API key here",
+                /* this list contains the categories of errors we want to show */
+                atd_show_types              : "Bias Language,Cliches,Complex Expression,Diacritical Marks,Double Negatives,Hidden Verbs,Jargon Language,Passive voice,Phrases to Avoid,Redundant Expression",
+                /* strings this plugin should ignore */
+                atd_ignore_strings          : "AtD,rsmudge",
+                /* enable "Ignore Always" menu item, uses cookies by default. Set atd_ignore_rpc_url to a URL AtD should send ignore requests to. */
+                atd_ignore_enable           : "true",
+                /* the URL to the button image to display */
+                //atd_button_url              : "atdbuttontr.gif",
+                atd_css_url : "{$atd_css_url}",
+                paste_preprocess : function(pl, o) {
+                    // Strip <a> HTML tags from clipboard content (Happens on Internet Explorer)
+                    o.content = o.content.replace( /(\s[a-z]+=")<a\s[^>]+>([^<]+)<\/a>/gi, '$1$2' );
+                }
+            };
+
+
+            // make sure TinyMCE doesn't try to load language pack
+            // and set urls for plugins so their dialogs work correctly
+            (function(){
+                var uri = document.location.protocol + '//' + document.location.host + eZOeGlobalSettings.ez_tinymce_url, tps = eZOeGlobalSettings.plugins.split(','), pm = tinymce.PluginManager, tp;
+                tinymce.ScriptLoader.markDone( uri.replace( 'tiny_mce', 'langs/' + eZOeGlobalSettings.language ) );
+                for (var i = 0, l = tps.length; i < l; i++)
+                {
+                    tp = tps[i].slice(1);
+                    pm.urls[ tp ] = uri.replace( 'tiny_mce.js', 'plugins/' + tp );
+                }
+            }())
+
+            tinyMCE.init( eZOeGlobalSettings );
+
+            function eZOeToggleEditor( id, settings )
+            {
+                var el = document.getElementById( id );
+                if ( el )
+                {
+                    if ( tinyMCE.getInstanceById( id ) == null )
+                        //tinyMCE.execCommand('mceAddControl', false, id);
+                        new tinymce.Editor(id, settings).render();
+                    else
+                        tinyMCE.execCommand( 'mceRemoveControl', false, id );
+                }
+            }
+
+
+EOT;
+        //eZDebug::writeDebug($js, __METHOD__);
+
+        return $js;
+
+    }
+
+
+    /**
+     * Returns single attribute initialization JS code
+     * @param array $args array( attribute_id, version, attribute_base )
+     * @return string
+     */
+    public static function ezoeAttributeInit( $args )
+    {
+        $attribute_base = $args[2];
+
+        //Fetch object attribute from arguments
+        $attribute = self::getAttributeFromArgs( $args );
+
+        if( !$attribute || $attribute->attribute( 'data_type_string' ) !== 'ezxmltext' )
+        {
+            return '';
+        }
+
+        $attribute_id = $attribute->attribute( 'id' );
+
+        //Layout settings
+        $input_handler=$attribute->attribute('content')->attribute('input');
+        $layout_settings = $input_handler->attribute( 'editor_layout_settings' );
+        $layout_settings_buttons = implode( ',', $layout_settings['buttons'] );
+        $layout_settings_path_location = $layout_settings['path_location'];
+        $layout_settings_toolbar_location = $layout_settings['toolbar_location'];
+
+
+        $js = <<<EOT
+			jQuery(function(){
+                eZOeAttributeSettings = eZOeGlobalSettings;
+                eZOeAttributeSettings['ez_attribute_id'] = {$attribute_id};
+                eZOeAttributeSettings['theme_advanced_buttons1'] = "{$layout_settings_buttons}";
+                eZOeAttributeSettings['theme_advanced_statusbar_location'] = "{$layout_settings_path_location}";
+                eZOeAttributeSettings['theme_advanced_toolbar_location'] = "{$layout_settings_toolbar_location}";
+
+                eZOeToggleEditor( '{$attribute_base}_data_text_{$attribute_id}', eZOeAttributeSettings );
+            });
+EOT;
+
+        //eZDebug::writeDebug($js, __METHOD__);
+
+        return $js;
+
+    }
+
+    /**
+     * Extracts data from arguments and fetches content object attribute
+     * @param array $args array( attribute_id, version[, attribute_base] )
+     * @return eZContentObjectAttribute
+     */
+    private static function getAttributeFromArgs( $args )
+    {
+        $attributeID = (int)$args[0];
+        $version = (int)$args[1];
+        return eZContentObjectAttribute::fetch( $attributeID, $version );
+    }
+
 }
 
 ?>
