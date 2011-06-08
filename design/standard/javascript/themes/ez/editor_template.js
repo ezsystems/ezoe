@@ -216,6 +216,13 @@
             }
 
             ed.addShortcut('ctrl+s', ed.getLang('save.save_desc'), 'mceStoreDraft');
+
+            // eZ: the pasted text from Office with Firefox and Chrome on Windows may
+            // contain some line feeds that are badly interpreted
+            // see http://issues.ez.no/18239
+            ed.onPostProcess.add(function(pl, o) {
+                o.content = o.content.replace(/(\n|\r)/g, "");
+            });
         },
 
         createControl : function(n, cf) {
