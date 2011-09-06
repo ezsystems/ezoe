@@ -1331,7 +1331,10 @@
                         case 'anchor':
                         case 'link':
                             if (v = DOM.getAttrib(n, 'href'))
+                            {
                                 ti += 'href: ' + v + ' ';
+                                suf = v;
+                            }
                             else if (v = DOM.getAttrib(n, 'name'))
                                 naa += '#' + v;
                             break;
@@ -1394,6 +1397,13 @@
                         p.insertBefore(pi, p.firstChild);
                     else
                         p.appendChild(pi);
+
+                    if (suf)
+                    {
+                    	sufEl = DOM.create('span', null, ':: ' + suf);
+                    	p.appendChild(sufEl);
+                    }
+
                 }, ed.getBody());
             }
         },
