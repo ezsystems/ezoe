@@ -1331,7 +1331,10 @@
                         case 'anchor':
                         case 'link':
                             if (v = DOM.getAttrib(n, 'href'))
+                            {
                                 ti += 'href: ' + v + ' ';
+                                suf = v;
+                            }
                             else if (v = DOM.getAttrib(n, 'name'))
                                 naa += '#' + v;
                             break;
@@ -1387,13 +1390,22 @@
                         pi = DOM.create('a', {'href' : "javascript:;", onmousedown : "return false;", title : ti, 'class' : 'mcePath_' + (de++)}, na);
                     }
 
-                    if (p.getElementsByTagName('a').length) {
+                    pathLen = p.getElementsByTagName('a').length;
+                    
+                    if ( pathLen ) {
                         p.insertBefore(DOM.doc.createTextNode(' \u00bb '), p.firstChild);
                         p.insertBefore(pi, p.firstChild);
                     } else if ( p.firstChild ) // &nbsp;
                         p.insertBefore(pi, p.firstChild);
                     else
                         p.appendChild(pi);
+
+                    if (suf && !pathLen)
+                    {
+                    	sufEl = DOM.create('span', null, ':: ' + suf);
+                    	p.appendChild(sufEl);
+                    }
+
                 }, ed.getBody());
             }
         },
