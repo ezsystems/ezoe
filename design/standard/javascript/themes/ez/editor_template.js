@@ -268,9 +268,9 @@
 
             // eZ: the pasted text from Office with Firefox and Chrome on Windows may
             // contain some line feeds that are badly interpreted
-            // see http://issues.ez.no/18239
+            // see http://issues.ez.no/18239 and http://issues.ez.no/18482
             ed.onPostProcess.add(function(pl, o) {
-                o.content = o.content.replace(/(\n|\r)/g, "");
+                o.content = o.content.replace(/([^ >])(\r\n|\n|\r)/g, "$1 ").replace(/(\n|\r)/g, "");
             });
         },
 
