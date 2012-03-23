@@ -139,6 +139,11 @@
             // Init editor
             ed.onInit.add(function() {
                 ed.onNodeChange.add(t._nodeChanged, t);
+
+                // eZ: workaround for http://issues.ez.no/19254 to make TinyMCE/ezoe work in Firefox 11
+                // affects only TinyMCE <= 3.4.5
+                ed.getWin().frameElement.style.display = 'block';
+
                 ed.addShortcut('ctrl+8', '', ['FormatBlock', false, '<pre>']);
                 ed.addShortcut('ctrl+9', '', ['FormatBlock', false, '<pre>']);
                 if ( s.theme_ez_content_css )
