@@ -73,7 +73,7 @@ $imageIni  = eZINI::instance( 'image.ini' );
 $params    = array('dataMap' => array('image'));
 
 
-if ( !$object )
+if ( !$object instanceof eZContentObject || !$object->canEdit() )
 {
    echo ezi18n( 'design/standard/ezoe', 'Invalid parameter: %parameter = %value', null, array( '%parameter' => 'ObjectId', '%value' => $objectID ) );
    eZExecution::cleanExit();
