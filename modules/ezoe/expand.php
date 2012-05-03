@@ -48,7 +48,7 @@ if ( !$nodeID )
 
 $node = eZContentObjectTreeNode::fetch( $nodeID );
 
-if ( !$node instanceOf eZContentObjectTreeNode )
+if ( !$node instanceOf eZContentObjectTreeNode || !$node->canRead() )
 {
     header("HTTP/1.0 500 Internal Server Error");
     echo ezi18n( 'design/standard/ezoe', 'Invalid parameter: %parameter = %value', null, array( '%parameter' => 'ParentNodeID', '%value' => $nodeID ) );
