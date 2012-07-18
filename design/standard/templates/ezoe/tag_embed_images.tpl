@@ -62,7 +62,7 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
            if ( args['align'] )
            {
                // adding a class based on the align to force the alignment in the editor
-               args['class']  = 'ezoeAlign' + args['align'];
+               args['class']  = args['class'] + ' ezoeAlign' + args['align'];
            }
         }
         ed.dom.setAttribs( el, args );
@@ -98,8 +98,8 @@ function inlineSelectorChange( e, el )
     else if ( def['view'] !== undefined )
         viewList.val( def['view'] );
 
-    if ( classValue && classListData[ tag ][ classValue ] !== undefined )
-        classList.val( classValue );
+    if ( classValue && classListData[ tag ][ classValue.split(" ")[0] ] !== undefined )
+        classList.val( classValue.split(" ")[0] );
     else if ( def['class'] !== undefined )
         classList.val( def['class'] );
 }
