@@ -93,8 +93,8 @@
 						s[n] = v;
 					});
 
-          objForm = tinymce.DOM.get(s.id).form;
-          $("#" + objForm.id).append(n);
+					objForm = tinymce.DOM.get(s.id).form;
+					$("#" + objForm.id).append(n);
 
 					s.id = 'mce_fullscreen';
 					s.width = n.clientWidth;
