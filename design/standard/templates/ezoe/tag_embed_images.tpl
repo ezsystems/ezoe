@@ -61,8 +61,10 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
            args['height'] = imageSizeObj['height'];
            if ( args['align'] )
            {
+               // remove any previous align class
+               args['class'] = args['class'].replace( /ezoeAlign\w+/, '' ).trim();
                // adding a class based on the align to force the alignment in the editor
-               args['class']  = 'ezoeAlign' + args['align'];
+               args['class'] = args['class'] + ' ezoeAlign' + args['align'];               
            }
         }
         ed.dom.setAttribs( el, args );
