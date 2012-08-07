@@ -98,8 +98,8 @@ function inlineSelectorChange( e, el )
     else if ( def['view'] !== undefined )
         viewList.val( def['view'] );
 
-    if ( classValue && classListData[ tag ][ classValue ] !== undefined )
-        classList.val( classValue );
+    if ( classValue && classListData[ tag ][ classValue.split(" ")[0] ] !== undefined )
+        classList.val( classValue.split(" ")[0] );
     else if ( def['class'] !== undefined )
         classList.val( def['class'] );
 }
