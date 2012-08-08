@@ -1772,6 +1772,8 @@
                 inp.value = value || 'hidden value';
                 formObj.appendChild( inp );
 
+                if(ed.getParam('fullscreen_editor_id'))
+                  tinyMCE.get(ed.getParam('fullscreen_editor_id')).setContent(ed.getContent({format : 'raw'}), {format : 'raw'});
                 if (formObj.onsubmit == null || formObj.onsubmit() != false)
                     formObj.submit();
 
