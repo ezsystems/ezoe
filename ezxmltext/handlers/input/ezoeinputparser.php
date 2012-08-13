@@ -1324,7 +1324,7 @@ class eZOEInputParser extends eZXMLInputParser
             {
                 if ( $attr !== '' && strpos( $attr, '|' ) !== false )
                 {
-                    list( $attrName, $attrValue ) = explode( '|', $attr );
+                    list( $attrName, $attrValue ) = explode( '|', $attr, 2 );
                     $element->setAttributeNS( 'http://ez.no/namespaces/ezpublish3/custom/',
                                               'custom:' . $attrName,
                                               $attrValue );
