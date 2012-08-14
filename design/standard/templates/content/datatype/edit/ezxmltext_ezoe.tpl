@@ -133,6 +133,8 @@
         paste_preprocess : function(pl, o) {ldelim}
             // Strip <a> HTML tags from clipboard content (Happens on Internet Explorer)
             o.content = o.content.replace( /(\s[a-z]+=")<a\s[^>]+>([^<]+)<\/a>/gi, '$1$2' );
+            // Strip namespaced tags, avoids issues with Word's "Smart Tags"
+            o.content = o.content.replace(/<\/?[^<>\s]+:[^<>]+>/g, '');
         {rdelim}
 
     {rdelim};
