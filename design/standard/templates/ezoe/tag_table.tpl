@@ -50,7 +50,7 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
                 }
                 else
                 {
-                    html += '<td><br _mce_bogus="1"/></td>';
+                    html += '<td><p><br _mce_bogus="1"/></p></td>';
                 }
             }
     
