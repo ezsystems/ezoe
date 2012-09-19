@@ -1501,7 +1501,7 @@ class eZOEXMLInput extends eZXMLInputHandler
                         {
                             // tinymce has some issues with empty content in some browsers
                             if ( self::browserSupportsDHTMLType() != 'Trident' )
-                                $cellContent = '<br _mce_bogus="1" />';
+                                $cellContent = '<p><br _mce_bogus="1" /></p>';
                         }
                         if ( $tableCell->nodeName === 'th' )
                         {
