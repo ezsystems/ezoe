@@ -1005,6 +1005,7 @@ class eZOEXMLInput extends eZXMLInputHandler
             $inline = !( $child->nodeName === 'ul'
                       || $child->nodeName === 'ol'
                       || $child->nodeName === 'literal'
+                      || $child->nodeName === 'table'
                       || ( $child->nodeName === 'custom'
                         && !self::customTagIsInline( $child->getAttribute( 'name' ) ) )
                       || ( $child->nodeName === 'embed'
