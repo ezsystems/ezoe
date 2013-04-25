@@ -282,7 +282,29 @@ var eZOEPopupUtils = {
      */
     insertHTMLCleanly: function( ed, html, id )
     {
-        var paragraphCleanup = false, newElement;
+        var paragraphCleanup = false, newElement,
+            patt, dom = ed.dom;
+        if ( html.indexOf('<table') === 0 ) {
+            // split the parent tag to avoid embedding a table
+            // in an hX or paragraph tag. This is mainly to avoid issues
+            // with IE9 see https://jira.ez.no/browse/EZP-20293
+            ed.selection.setContent('<br class="_mce_marker" />');
+
+            tinymce.each('h1,h2,h3,h4,h5,h6,p'.split(','), function(n) {
+                if (patt)
+                    patt += ',';
+
+                patt += n + ' ._mce_marker';
+            });
+
+            tinymce.each(dom.select(patt), function(n) {
+                dom.split(dom.getParent(n, 'h1,h2,h3,h4,h5,h6,p'), n);
+            });
+
+            dom.setOuterHTML(dom.select('br._mce_marker')[0], html);
+            return dom.get(id);
+        }
+
         if ( html.indexOf( '<div' ) === 0 || html.indexOf( '<pre' ) === 0 )
         {
             paragraphCleanup = true;
@@ -290,7 +312,7 @@ var eZOEPopupUtils = {
 
         ed.execCommand('mceInsertRawHTML', false, html, {skip_undo : 1} );
 
-        newElement = ed.dom.get( id );
+        newElement = dom.get( id );
         if ( paragraphCleanup ) this.paragraphCleanup( ed, newElement );
         return newElement;
     },
