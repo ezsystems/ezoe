@@ -46,7 +46,7 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
     {
         if ( contentType === 'images' || compatibilityMode === 'enabled' )
             return '<img id="__mce_tmp" src="JavaScript:void(0);" />';
-        if ( jQuery('#embed_inline_source').attr( 'checked' ) )
+        if ( jQuery('#embed_inline_source').prop( 'checked' ) )
            return '<span id="__mce_tmp">ezembed</span>';
         return '<div id="__mce_tmp"></div>';
     },
@@ -72,7 +72,7 @@ tinyMCEPopup.onInit.add( eZOEPopupUtils.BIND( eZOEPopupUtils.init, window, {
     },
     tagAttributeEditor: function( ed, el, args )
     {
-        args['inline'] = jQuery('#embed_inline_source').attr( 'checked' ) ? 'true' : 'false';
+        args['inline'] = jQuery('#embed_inline_source').prop( 'checked' ) ? 'true' : 'false';
         el = eZOEPopupUtils.switchTagTypeIfNeeded( el, (contentType === 'images' || compatibilityMode === 'enabled' ? 'img' : (args['inline'] === 'true' ? 'span' : 'div') ) );
         if ( compatibilityMode === 'enabled' )
         {
