@@ -1327,8 +1327,9 @@ class eZOEXMLInput extends eZXMLInputHandler
                 else if ( $inline === true )
                 {
                     if ( !$childTagText ) $childTagText = '&nbsp;';
-                    $output .= '<span class="ezoeItemCustomTag ' . $name . '" type="custom"' .
-                               $customAttributePart . $styleString . '>' . $childTagText . '</span>';
+                    $tagName = $name === 'underline' ? 'u' : 'span';
+                    $output .= '<' . $tagName . ' class="ezoeItemCustomTag ' . $name . '" type="custom"' .
+                               $customAttributePart . $styleString . '>' . $childTagText . '</' . $tagName . '>';
                 }
                 else if ( $inline )
                 {
