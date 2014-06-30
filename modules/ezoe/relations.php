@@ -97,7 +97,7 @@ if ( isset( $Params['EmbedID'] )  && $Params['EmbedID'])
 
 if ( !$embedObject instanceof eZContentObject || !$embedObject->canRead() )
 {
-   echo ezi18n( 'design/standard/ezoe', 'Invalid parameter: %parameter = %value', null, array( '%parameter' => 'EmbedID', '%value' => $Params['EmbedID'] ) );
+   echo ezi18n( 'design/standard/ezoe', 'Invalid parameter: %parameter = %value', null, array( '%parameter' => 'EmbedID', '%value' => (int)$Params['EmbedID'] ) );
    eZExecution::cleanExit();
 }
 
