@@ -117,7 +117,7 @@ if ( $http->hasPostVariable( 'uploadButton' ) || $forcedUpload )
     if ( $uploadedOk )
     {
         $newObject = $result['contentobject'];
-        $newObjectID = $newObject->attribute( 'id' );
+        $newObjectID = (int)$newObject->attribute( 'id' );
         $newObjectName = $newObject->attribute( 'name' );
         $newObjectNodeID = (int) $newObject->attribute( 'main_node_id' ); // this will be empty if object is stopped by approve workflow
 
@@ -173,7 +173,7 @@ if ( $http->hasPostVariable( 'uploadButton' ) || $forcedUpload )
 
         $object->addContentObjectRelation( $newObjectID, $objectVersion, 0, eZContentObject::RELATION_EMBED );
         echo '<html><head><title>HiddenUploadFrame</title><script type="text/javascript">';
-        echo 'window.parent.eZOEPopupUtils.selectByEmbedId( ' . $newObjectID . ', ' . $newObjectNodeID . ', "' . $newObjectName . '" );';
+        echo 'window.parent.eZOEPopupUtils.selectByEmbedId( ' . $newObjectID . ', ' . $newObjectNodeID . ', "' . json_encode( $newObjectName ) . '" );';
         echo '</script></head><body></body></html>';
     }
     else
