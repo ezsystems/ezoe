@@ -1178,7 +1178,7 @@ class eZOEXMLInput extends eZXMLInputHandler
                 {
                     $objectName = 'Unknown';
                     $classIdentifier = false;
-                    $tplSuffix = '_denied';
+                    $tplSuffix = '_deleted';
                     $className .= ' ezoeItemObjectDeleted';
                     if ( self::$showEmbedValidationErrors )
                     {
